@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<!-- crome용 -->
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>녹음하기</title>
+<style>
+  :root { --blue:#2563eb; --green:#16a34a; --red:#dc2626; --gray:#6b7280; }
+  * { box-sizing: border-box; }
+  body { font-family: 'Malgun Gothic', -apple-system, sans-serif; background:#f3f4f6; margin:0; padding:20px; }
+  .card { max-width:480px; margin:0 auto; background:#fff; border-radius:14px; padding:24px;
+          box-shadow:0 2px 10px rgba(0,0,0,0.08); }
+  .header-info { display:flex; align-items:center; gap:8px; margin-bottom:4px; flex-wrap:wrap; }
+  .class-badge { background:var(--blue); color:#fff; font-size:12px; font-weight:700;
+                  padding:4px 10px; border-radius:999px; }
+  .student-name-big { font-size:19px; font-weight:800; color:#111827; }
+  h1 { font-size:16px; margin:4px 0 12px; color:#374151; font-weight:600; }
+  .script-box { background:#f9fafb; border:1px solid #e5e7eb; border-radius:10px; padding:16px;
+                margin-bottom:16px; font-size:16px; line-height:1.7; color:#111827; white-space:pre-wrap; }
+  .hint { font-size:12px; color:var(--gray); margin-top:10px; text-align:center; }
+  button { border:none; border-radius:10px; padding:14px; font-size:16px; font-weight:700; cursor:pointer;
+           width:100%; }
+  .btn-record { background:var(--blue); color:#fff; }
+  .btn-stop { background:var(--red); color:#fff; }
+  .btn-submit { background:var(--green); color:#fff; margin-top:8px; }
+  .btn-redo2 { background:#f3f4f6; color:#374151; border:1px solid #d1d5db; margin-top:8px; }
+  .btn-close { background:#f3f4f6; color:#374151; border:1px solid #d1d5db; margin-top:10px; }
+  .status { text-align:center; font-size:15px; margin-top:14px; min-height:24px; }
+  .timer { font-variant-numeric: tabular-nums; color:var(--gray); font-size:14px; text-align:center; margin-top:6px; }
+  .banner { padding:10px 12px; border-radius:8px; font-size:13px; margin-bottom:14px; }
+  .banner.error { background:#fef2f2; color:var(--red); }
+  .banner.info { background:#eff6ff; color:#1d4ed8; margin-top:12px; text-align:center; font-weight:600; }
+  .result { text-align:center; margin-top:18px; font-size:17px; font-weight:700; }
+  audio { width:100%; margin-top:14px; }
+</style>
+</head>
+<body>
+<div style="position:fixed; bottom:4px; right:6px; font-size:10px; color:#d1d5db; z-index:9999; pointer-events:none; user-select:none;">crome</div>
+<div class="card">
+  <div class="header-info">
+    <span class="class-badge" id="classBadge"></span>
+    <span class="student-name-big" id="studentNameBig"></span>
+  </div>
+  <h1 id="titleLine">녹음하기</h1>
+  <div class="script-box" id="scriptText"></div>
+
+  <div id="controls">
+    <button class="btn-record" id="recordBtn">🎙️ 녹음 시작</button>
+  </div>
+  <div class="timer" id="timerText"></div>
+  <div class="status" id="statusText"></div>
+  <div id="reviewArea"></div>
+  <div id="resultArea"></div>
+
+  <p class="hint">🔍 크롬 브라우저를 사용하면 좀 더 정확한 자동 분석을 받을 수 있어요.</p>
+</div>
+
+<script>
+// ⚠️ Apps Script 웹앱 배포 URL로 반드시 교체하세요 (끝이 /exec 로 끝나는 그 주소).
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyoE90HietTg4sG3ODW5bSgG0D_PPj1Zxn3ShOVYfVDEhwGOIqYJRfsP5WFb3B3mD2A/exec';
+
+const MAX_RECORD_SECONDS = 300; // 5분 안전장치
+
+const params = new URLSearchParams(window.location.search);
+const ctx = {
+  studentId: params.get('studentId') || '',
+  studentName: params.get('studentName') || '',
+  className: params.get('className') || '',
+  classId: params.get('classId') || '',
+  assignmentId: params.get('assignmentId') || '',
+  assignmentTitle: params.get('assignmentTitle') || '',
+  attempt: params.get('attempt') || '1',
+  script: params.get('script') || '',
+  isRetry: params.get('isRetry') === '1'
+};
+
+document.getElementById('classBadge').textContent = ctx.className;
+document.getElementById('studentNameBig').textContent = ctx.studentName;
+document.getElementById('titleLine').textContent =
+  ctx.attempt + (ctx.isRetry ? '번째 다시읽기 · ' : '번째 읽기 · ') + ctx.assignmentTitle;
+document.getElementById('scriptText').textContent = ctx.script;
+
+if (!ctx.studentId || !ctx.assignmentId || !ctx.script) {
+  document.getElementById('controls').innerHTML =
+    '<div class="banner error">필요한 정보가 없어요. 원래 숙제 화면에서 다시 시도해주세요.</div>';
+}
+
+let mediaRecorder, audioChunks = [], recognizer = null;
+let recognizedTextBuffer = '';
+let recordingTimer = null, autoStopTimer = null, recordSeconds = 0;
+let isRecordingNow = false;
+let recordedBlob = null;
+
+window.addEventListener('beforeunload', (e) => {
+  if (isRecordingNow) {
+    e.preventDefault();
+    e.returnValue = '';
+  }
+});
+
+const recordBtn = document.getElementById('recordBtn');
+const controls = document.getElementById('controls');
+const timerText = document.getElementById('timerText');
+const statusText = document.getElementById('statusText');
+const reviewArea = document.getElementById('reviewArea');
+const resultArea = document.getElementById('resultArea');
+
+recordBtn.addEventListener('click', startRecording);
+
+function startRecording() {
+  audioChunks = [];
+  recognizedTextBuffer = '';
+  statusText.textContent = '';
+  reviewArea.innerHTML = '';
+  resultArea.innerHTML = '';
+
+  navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+    mediaRecorder = new MediaRecorder(stream);
+    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+    mediaRecorder.onstop = () => {
+      stream.getTracks().forEach(t => t.stop());
+      isRecordingNow = false;
+      clearTimeout(autoStopTimer);
+      clearInterval(recordingTimer);
+      timerText.textContent = '';
+      showReviewStep();
+    };
+    mediaRecorder.start();
+    isRecordingNow = true;
+
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SR) {
+      recognizer = new SR();
+      recognizer.lang = 'en-US';
+      recognizer.continuous = true;
+      recognizer.interimResults = false;
+      recognizer.onresult = (e) => {
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          if (e.results[i].isFinal) recognizedTextBuffer += e.results[i][0].transcript + ' ';
+        }
+      };
+      recognizer.onerror = () => {};
+      recognizer.start();
+    } else {
+      recognizer = null;
+    }
+
+    controls.innerHTML = '<button class="btn-stop" id="stopBtn">⏹ 녹음 종료</button>';
+    document.getElementById('stopBtn').addEventListener('click', stopRecording);
+    statusText.textContent = '🔴 녹음 중...';
+
+    autoStopTimer = setTimeout(() => { stopRecording(); }, MAX_RECORD_SECONDS * 1000);
+
+    recordSeconds = 0;
+    recordingTimer = setInterval(() => {
+      recordSeconds++;
+      const mm = String(Math.floor(recordSeconds / 60)).padStart(2, '0');
+      const ss = String(recordSeconds % 60).padStart(2, '0');
+      timerText.textContent = mm + ':' + ss;
+    }, 1000);
+  }).catch(() => {
+    statusText.innerHTML = '<div class="banner error">마이크 접근이 거부되었습니다. 브라우저 마이크 권한을 허용한 뒤 다시 시도해주세요.</div>';
+  });
+}
+
+function stopRecording() {
+  clearInterval(recordingTimer);
+  clearTimeout(autoStopTimer);
+  if (recognizer) { try { recognizer.stop(); } catch (e) {} }
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+}
+
+// ---- 녹음 종료 후: 들어보고 제출 여부 결정 ----
+function showReviewStep() {
+  recordedBlob = new Blob(audioChunks, { type: 'audio/webm' });
+
+  if (recordedBlob.size < 2000) {
+    statusText.innerHTML = '<div class="banner error">녹음에 문제가 있어요. 다시 녹음해주세요.</div>';
+    controls.innerHTML = '<button class="btn-record" onclick="location.reload()">다시 녹음하기</button>';
+    return;
+  }
+
+  statusText.textContent = '';
+  controls.innerHTML = '';
+  const audioUrl = URL.createObjectURL(recordedBlob);
+  reviewArea.innerHTML = `
+    <audio controls src="${audioUrl}"></audio>
+    <p class="hint" style="margin-top:10px;">녹음을 들어본 뒤 제출해주세요. 마음에 안 들면 다시 녹음할 수 있어요.</p>
+    <button class="btn-submit" id="submitBtn">✅ 제출하기</button>
+    <button class="btn-redo2" id="redoBtn">🔄 다시 녹음하기</button>
+  `;
+  document.getElementById('submitBtn').addEventListener('click', submitRecordingNow);
+  document.getElementById('redoBtn').addEventListener('click', () => {
+    reviewArea.innerHTML = '';
+    recordedBlob = null;
+    controls.innerHTML = '<button class="btn-record" id="recordBtn">🎙️ 녹음 시작</button>';
+    document.getElementById('recordBtn').addEventListener('click', startRecording);
+  });
+}
+
+function submitRecordingNow() {
+  reviewArea.innerHTML = '';
+  statusText.textContent = '확인 중...';
+
+  const reader = new FileReader();
+  reader.onloadend = () => {
+    const base64Data = reader.result.split(',')[1];
+
+    fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // CORS 프리플라이트 회피
+      body: JSON.stringify({
+        action: 'submitRecording',
+        payload: {
+          studentId: ctx.studentId,
+          studentName: ctx.studentName,
+          classId: ctx.classId,
+          assignmentId: ctx.assignmentId,
+          attemptNumber: Number(ctx.attempt),
+          mimeType: 'audio/webm',
+          base64Data: base64Data,
+          recognizedText: recognizedTextBuffer.trim()
+        }
+      })
+    })
+      .then(res => res.json())
+      .then(res => {
+        statusText.textContent = '';
+        if (!res.success) {
+          resultArea.innerHTML = '<div class="banner error">' + res.message + '</div>' +
+            '<button class="btn-record" onclick="location.reload()">다시 녹음하기</button>';
+          return;
+        }
+        const gradeText = {
+          'Good': '😃 참 잘 읽었어요',
+          'Normal': '🙂 잘 읽었어요',
+          'Practice': '🤔 다시 한번 읽어볼까요'
+        }[res.grade] || (res.retryPending ? '나중에 등급이 확인되면 표시돼요' : '등급 확인 실패');
+
+        resultArea.innerHTML =
+          '<div class="result">✅ 제출 완료!<br>' + gradeText + '</div>' +
+          '<div class="banner info">다시 녹음하거나 다음 번째 읽기를 하려면<br>이 창을 닫고 원래 화면으로 돌아가주세요.</div>' +
+          '<button class="btn-close" id="closeBtn">이 창 닫고 돌아가기</button>';
+
+        notifyOpenerAndMaybeClose();
+      })
+      .catch(() => {
+        statusText.textContent = '';
+        resultArea.innerHTML = '<div class="banner error">업로드에 실패했어요. 인터넷 연결을 확인하고 다시 시도해주세요.</div>' +
+          '<button class="btn-record" onclick="location.reload()">다시 녹음하기</button>';
+      });
+  };
+  reader.readAsDataURL(recordedBlob);
+}
+
+function notifyOpenerAndMaybeClose() {
+  try {
+    if (window.opener) {
+      window.opener.postMessage({ type: 'readingHwRecordingComplete' }, '*');
+    }
+  } catch (e) {}
+
+  const closeBtn = document.getElementById('closeBtn');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => { window.close(); });
+  }
+}
+</script>
+</body>
+</html>
