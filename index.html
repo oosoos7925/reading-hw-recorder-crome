@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<!-- crome용 -->
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>영어 읽기 숙제</title>
+<style>
+  :root { --blue:#2563eb; --green:#16a34a; --red:#dc2626; --gray:#6b7280; --amber:#d97706; }
+  * { box-sizing: border-box; }
+  body { font-family: 'Malgun Gothic', -apple-system, sans-serif; background:#f3f4f6; margin:0; padding:20px;
+         font-size:15px; }
+  html, body {
+    width: 100% !important;
+    min-width: 100% !important;
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%; /* 크롬 폰트 자동 확대/축소 방지 */
+  }
+  .card { max-width:520px; margin:0 auto; background:#fff; border-radius:16px; padding:24px;
+          box-sizing: border-box;
+          box-shadow:0 2px 12px rgba(0,0,0,0.08); }
+  h1 { font-size:19px; margin:0 0 14px; color:#111827; }
+  input[type=text] { width:100%; padding:13px; font-size:16px; border-radius:10px; border:1px solid #d1d5db; }
+  .row-flex { display:flex; gap:8px; margin-top:10px; }
+  .row-flex input { flex:1; }
+  button.primary { background:var(--blue); color:#fff; border:none; border-radius:10px; padding:14px 18px;
+                    font-size:16px; font-weight:700; cursor:pointer; white-space:nowrap; min-height:48px; }
+  button.primary:disabled { background:#9ca3af; cursor:not-allowed; }
+  .radio-list { margin-top:12px; }
+  .radio-item { display:flex; align-items:center; gap:8px; padding:12px; border:1px solid #e5e7eb;
+                border-radius:10px; margin-top:6px; cursor:pointer; font-size:15px; }
+  .radio-item input { width:auto; }
+  .msg { margin-top:14px; padding:12px 14px; border-radius:10px; font-size:14px; }
+  .msg.error { background:#fef2f2; color:var(--red); }
+  .msg.info { background:#eff6ff; color:#1d4ed8; }
+
+  .header-info { display:flex; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap; }
+  .class-badge { background:var(--blue); color:#fff; font-size:13px; font-weight:700;
+                  padding:5px 12px; border-radius:999px; white-space:nowrap; }
+  .student-name-big { font-size:22px; font-weight:800; color:#111827; }
+  .history-link { text-align:right; font-size:13px; color:var(--blue); cursor:pointer;
+                   margin-bottom:6px; text-decoration:underline; }
+
+  .retry-banner { background:#fff7ed; color:var(--amber); border:1.5px solid #fed7aa; border-radius:10px;
+                   padding:10px 14px; font-weight:700; font-size:14px; margin:18px 0 10px; }
+
+  .script-box { background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px; padding:16px;
+                margin-top:10px; font-size:17px; line-height:1.85; color:#111827; white-space:pre-wrap; }
+  .hint { font-size:12px; color:var(--gray); margin-top:14px; text-align:center; }
+
+  .info-box { background:#eff6ff; border-radius:12px; padding:12px 14px; margin:14px 0; }
+  .info-line { display:flex; align-items:flex-start; gap:8px; font-size:13px; color:#1d4ed8; line-height:1.6; }
+  .info-line + .info-line { margin-top:8px; }
+  .info-icon { flex-shrink:0; font-size:15px; }
+
+  .attempt { padding:14px; border:1px solid #e5e7eb; border-radius:12px; margin-top:10px; }
+  .attempt.locked { background:#f9fafb; opacity:0.6; }
+  .attempt-top { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .attempt-label { font-weight:700; font-size:15px; }
+  .status-txt { font-size:13px; color:var(--gray); margin-top:6px; line-height:1.5; }
+  button.btn-go { background:var(--blue); color:#fff; border:none; border-radius:10px;
+                   padding:10px 16px; font-size:13px; font-weight:700; cursor:pointer; min-height:40px; }
+  button.btn-locked { background:#e5e7eb; color:#9ca3af; border:none; border-radius:10px;
+                       padding:10px 16px; font-size:13px; font-weight:700; cursor:not-allowed; }
+  button.btn-redo { background:#f3f4f6; color:#374151; border:1px solid #d1d5db; border-radius:10px;
+                     padding:7px 12px; font-size:12px; cursor:pointer; }
+  .waiting-banner { margin-top:16px; padding:12px 14px; border-radius:10px; font-size:14px;
+                     text-align:center; background:#eff6ff; color:#1d4ed8; }
+  .done-banner { margin-top:16px; padding:16px 14px; border-radius:12px; font-size:16px; font-weight:800;
+                  text-align:center; background:#f0fdf4; color:#15803d; }
+
+  .history-item { border:1px solid #e5e7eb; border-radius:12px; padding:12px 14px; margin-top:10px; }
+  .history-item h3 { margin:0 0 6px; font-size:15px; color:#111827; }
+  .history-attempt { font-size:13px; color:#374151; padding:4px 0; border-top:1px dashed #e5e7eb; }
+  .history-attempt:first-child { border-top:none; }
+  button.btn-gray-full { background:#f3f4f6; color:#374151; border:1px solid #d1d5db; border-radius:10px;
+                          padding:12px 16px; font-size:14px; width:100%; margin-top:16px; cursor:pointer; }
+</style>
+</head>
+<body>
+<div style="position:fixed; bottom:4px; right:6px; font-size:10px; color:#d1d5db; z-index:9999; pointer-events:none; user-select:none;">crome</div>
+<div class="card" id="loginCard">
+  <h1>📖 영어 읽기 숙제</h1>
+  <input type="text" id="nameInput" placeholder="이름을 입력하세요" autocomplete="off">
+  <div class="row-flex">
+    <button class="primary" id="goBtn" style="width:100%;">숙제하기로 이동</button>
+  </div>
+  <div id="classChoiceArea" style="display:none;">
+    <p class="msg info" id="dupMsg"></p>
+    <div class="radio-list" id="classRadios"></div>
+    <div class="row-flex">
+      <button class="primary" id="confirmClassBtn" style="width:100%;">확인</button>
+    </div>
+  </div>
+  <div id="loginMsg"></div>
+</div>
+
+<div class="card" id="homeworkCard" style="display:none;">
+  <div class="history-link" id="historyLinkBtn">📋 지난 숙제 기록 보기</div>
+  <div class="header-info">
+    <span class="class-badge" id="classBadge"></span>
+    <span class="student-name-big" id="studentNameBig"></span>
+  </div>
+
+  <div id="mainAssignmentBlock">
+    <h1 id="assignmentTitleLabel">숙제</h1>
+    <div class="script-box" id="scriptText"></div>
+    <div class="info-box">
+      <div class="info-line"><span class="info-icon">🎙️</span><span>녹음 버튼을 누르면 새 창이 열리고, 녹음을 마치면 이 화면이 자동으로 업데이트돼요.</span></div>
+      <div class="info-line"><span class="info-icon">⚠️</span><span>마이크 권한 요청 팝업이 뜨면 반드시 "허용"을 눌러야 녹음할 수 있어요.</span></div>
+    </div>
+    <div id="attemptsArea"></div>
+  </div>
+
+  <div id="retryAssignmentBlock" style="display:none;">
+    <div class="retry-banner">🔁 다시 읽어야 할 단원이 있어요</div>
+    <h1 id="retryAssignmentTitleLabel">다시 읽기</h1>
+    <div class="script-box" id="retryScriptText"></div>
+    <div id="retryAttemptsArea"></div>
+  </div>
+
+  <div id="waitingBanner"></div>
+  <div id="allDoneArea"></div>
+</div>
+
+<div class="card" id="historyCard" style="display:none;">
+  <h1>📋 지난 숙제 기록</h1>
+  <div id="historyList"></div>
+  <button class="btn-gray-full" id="backFromHistoryBtn">돌아가기</button>
+</div>
+
+<script>
+// ---- 버튼 중복 클릭 방지 ----
+// (시간이 지나면 자동으로 풀리는 방식이 아니라, 실제 다음 화면/동작이 일어날 때까지
+//  확실하게 비활성 상태를 유지하도록 각 버튼에서 직접 제어합니다.)
+
+// Apps Script 웹앱 배포 URL (doPost가 JSON API 역할을 함)
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyoE90HietTg4sG3ODW5bSgG0D_PPj1Zxn3ShOVYfVDEhwGOIqYJRfsP5WFb3B3mD2A/exec';
+// 녹음 페이지 (같은 저장소, GitHub Pages)
+const RECORDER_PAGE_URL = 'recorder.html';
+
+function callApi(action, payload) {
+  return fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // CORS 프리플라이트 회피
+    body: JSON.stringify({ action: action, payload: payload || {} })
+  }).then(res => res.json());
+}
+
+let currentStudentId = '', currentStudentName = '', currentClassId = '', currentClassName = '';
+
+const gradeInfo = {
+  'Good':     { icon: '😃', text: '참 잘 읽었어요' },
+  'Normal':   { icon: '🙂', text: '잘 읽었어요' },
+  'Practice': { icon: '🤔', text: '다시 한번 읽어볼까요' }
+};
+const numIcon = { 1: '1️⃣', 2: '2️⃣', 3: '3️⃣' };
+
+function setBtnBusy(btn, busyText) {
+  if (!btn) return;
+  if (!btn.dataset.origText) btn.dataset.origText = btn.textContent;
+  btn.disabled = true;
+  btn.style.opacity = '0.55';
+  btn.style.cursor = 'wait';
+  if (busyText) btn.textContent = busyText;
+}
+function resetBtn(btn) {
+  if (!btn) return;
+  btn.disabled = false;
+  btn.style.opacity = '';
+  btn.style.cursor = '';
+  if (btn.dataset.origText) btn.textContent = btn.dataset.origText;
+}
+
+// ---- 녹음 페이지로부터 완료 신호 수신 ----
+window.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'readingHwRecordingComplete') {
+    document.getElementById('waitingBanner').innerHTML = '';
+    reloadHomework();
+  }
+});
+
+// ---- 로그인 ----
+const nameInput = document.getElementById('nameInput');
+const goBtn = document.getElementById('goBtn');
+const loginMsg = document.getElementById('loginMsg');
+const classChoiceArea = document.getElementById('classChoiceArea');
+
+goBtn.addEventListener('click', () => {
+  const name = nameInput.value.trim();
+  if (!name) return;
+  setBtnBusy(goBtn, '확인 중...');
+  classChoiceArea.style.display = 'none';
+  loginMsg.innerHTML = '<div class="msg info">숙제 화면으로 이동 중...</div>';
+
+  callApi('findStudentMatches', { name: name })
+    .then(res => {
+      const matches = res.matches || [];
+      if (matches.length === 0) {
+        resetBtn(goBtn);
+        loginMsg.innerHTML = '<div class="msg error">등록되지 않은 이름입니다. 선생님께 확인해주세요.</div>';
+      } else if (matches.length === 1) {
+        enterHomework(matches[0].studentId, name, matches[0].classId);
+      } else {
+        resetBtn(goBtn);
+        loginMsg.innerHTML = '';
+        document.getElementById('dupMsg').textContent =
+          `'${name}' 학생이 여러 반에 있습니다. 반을 선택해주세요.`;
+        const radios = document.getElementById('classRadios');
+        radios.innerHTML = '';
+        matches.forEach((m, idx) => {
+          const div = document.createElement('label');
+          div.className = 'radio-item';
+          div.innerHTML = `<input type="radio" name="classChoice" value="${idx}" ${idx===0?'checked':''}> ${m.className}`;
+          radios.appendChild(div);
+        });
+        classChoiceArea.style.display = 'block';
+        classChoiceArea.dataset.matches = JSON.stringify(matches);
+        classChoiceArea.dataset.name = name;
+      }
+    })
+    .catch(() => {
+      resetBtn(goBtn);
+      loginMsg.innerHTML = '<div class="msg error">오류가 발생했습니다. 다시 시도해주세요.</div>';
+    });
+});
+
+const confirmClassBtn = document.getElementById('confirmClassBtn');
+confirmClassBtn.addEventListener('click', () => {
+  const matches = JSON.parse(classChoiceArea.dataset.matches);
+  const name = classChoiceArea.dataset.name;
+  const idx = Number(document.querySelector('input[name=classChoice]:checked').value);
+  setBtnBusy(confirmClassBtn, '확인 중...');
+  setBtnBusy(goBtn);
+  loginMsg.innerHTML = '<div class="msg info">숙제 화면으로 이동 중...</div>';
+  enterHomework(matches[idx].studentId, name, matches[idx].classId);
+});
+
+function enterHomework(studentId, studentName, classId) {
+  currentStudentId = studentId;
+  currentStudentName = studentName;
+  currentClassId = classId;
+  callApi('getHomeworkScreen', { studentId: studentId })
+    .then(res => {
+      if (res.error) {
+        loginMsg.innerHTML = '<div class="msg error">' + res.error + '</div>';
+        resetBtn(goBtn);
+        resetBtn(confirmClassBtn);
+        return;
+      }
+      if (res.noAssignment) {
+        loginMsg.innerHTML = '<div class="msg info">' + res.className + ' - 아직 등록된 과제가 없어요. 선생님께 확인해주세요.</div>';
+        resetBtn(goBtn);
+        resetBtn(confirmClassBtn);
+        return;
+      }
+      currentClassName = res.className;
+      resetBtn(goBtn);
+      resetBtn(confirmClassBtn);
+      document.getElementById('loginCard').style.display = 'none';
+      document.getElementById('homeworkCard').style.display = 'block';
+      document.getElementById('classBadge').textContent = res.className;
+      document.getElementById('studentNameBig').textContent = currentStudentName;
+      applyHomeworkData(res);
+    })
+    .catch(() => {
+      loginMsg.innerHTML = '<div class="msg error">오류가 발생했습니다. 다시 시도해주세요.</div>';
+      resetBtn(goBtn);
+      resetBtn(confirmClassBtn);
+    });
+}
+
+function isFullyDone(attempts) {
+  const set = new Set(attempts.map(a => a.attempt));
+  return set.has(1) && set.has(2) && set.has(3);
+}
+
+function applyHomeworkData(res) {
+  document.getElementById('assignmentTitleLabel').textContent = res.assignmentTitle;
+  document.getElementById('scriptText').textContent = res.script;
+  window.currentAssignmentId = res.assignmentId;
+  window.currentAssignmentTitle = res.assignmentTitle;
+  window.currentScript = res.script;
+  renderAttemptsInto('attemptsArea', res.attempts, false);
+
+  const retryBlock = document.getElementById('retryAssignmentBlock');
+  let retryDone = true;
+  if (res.retryAssignment) {
+    retryBlock.style.display = 'block';
+    document.getElementById('retryAssignmentTitleLabel').textContent = res.retryAssignment.assignmentTitle;
+    document.getElementById('retryScriptText').textContent = res.retryAssignment.script;
+    window.retryAssignmentId = res.retryAssignment.assignmentId;
+    window.retryAssignmentTitle = res.retryAssignment.assignmentTitle;
+    window.retryScript = res.retryAssignment.script;
+    renderAttemptsInto('retryAttemptsArea', res.retryAssignment.attempts, true);
+    retryDone = isFullyDone(res.retryAssignment.attempts);
+  } else {
+    retryBlock.style.display = 'none';
+  }
+
+  const mainDone = isFullyDone(res.attempts);
+  const allDoneArea = document.getElementById('allDoneArea');
+  if (mainDone && retryDone) {
+    const allAttempts = res.attempts.concat(res.retryAssignment ? res.retryAssignment.attempts : []);
+    const hasPractice = allAttempts.some(a => a.grade === 'Practice');
+    const bannerHtml = hasPractice
+      ? '<div class="done-banner" style="margin-top:20px; background:#fff7ed; color:#d97706;">💪 연습해서 다시 한번 녹음해봐요!</div>'
+      : '<div class="done-banner" style="margin-top:20px;">🎉 오늘 숙제를 모두 마쳤어요! 수고했어요.</div>';
+    allDoneArea.innerHTML = bannerHtml +
+      '<button class="primary" id="goToLoginBtn" style="width:100%; margin-top:12px;">🏠 처음 화면으로 이동</button>';
+    document.getElementById('goToLoginBtn').addEventListener('click', goToLoginScreen);
+  } else {
+    allDoneArea.innerHTML = '';
+  }
+}
+
+function goToLoginScreen() {
+  document.getElementById('homeworkCard').style.display = 'none';
+  document.getElementById('historyCard').style.display = 'none';
+  document.getElementById('loginCard').style.display = 'block';
+  document.getElementById('nameInput').value = '';
+  document.getElementById('loginMsg').innerHTML = '';
+  document.getElementById('classChoiceArea').style.display = 'none';
+  resetBtn(goBtn);
+  resetBtn(confirmClassBtn);
+  currentStudentId = ''; currentStudentName = ''; currentClassId = ''; currentClassName = '';
+}
+
+// ---- 숙제 화면: 시도 카드 렌더링 (일반/다시읽기 공용) ----
+function renderAttemptsInto(containerId, attempts, isRetry) {
+  const attemptsArea = document.getElementById(containerId);
+  attemptsArea.innerHTML = '';
+
+  const doneMap = {};
+  attempts.forEach(a => { doneMap[a.attempt] = a; });
+  const allDone = doneMap[1] && doneMap[2] && doneMap[3];
+  const label = isRetry ? '번째 다시읽기' : '번째 읽기';
+
+  for (let n = 1; n <= 3; n++) {
+    const info = doneMap[n];
+    const unlocked = (n === 1) || !!doneMap[n - 1];
+    const row = document.createElement('div');
+    row.className = 'attempt' + (!info && !unlocked ? ' locked' : '');
+
+    let statusHtml, actionHtml;
+    if (!info) {
+      if (unlocked) {
+        statusHtml = '아직 제출하지 않음';
+        actionHtml = `<button class="btn-go" onclick="openRecorder(this, ${n}, ${isRetry})">🎙️ 녹음하러 가기</button>`;
+      } else {
+        statusHtml = '이전 읽기를 먼저 완료해주세요';
+        actionHtml = `<button class="btn-locked" disabled>🔒 잠김</button>`;
+      }
+    } else if (info.grade && gradeInfo[info.grade]) {
+      statusHtml = `✅ 제출 완료! ${gradeInfo[info.grade].icon} ${gradeInfo[info.grade].text}` +
+                   (info.comment ? `<br>💬 선생님: ${info.comment}` : '');
+      actionHtml = `<button class="btn-redo" onclick="openRecorder(this, ${n}, ${isRetry})">🔄 다시 녹음하러 가기</button>`;
+    } else if (info.retryPending) {
+      statusHtml = '✅ 제출 완료! 나중에 등급이 확인되면 표시돼요 (제출은 잘 완료됐어요)';
+      actionHtml = `<button class="btn-redo" onclick="openRecorder(this, ${n}, ${isRetry})">🔄 다시 녹음하러 가기</button>`;
+    } else {
+      statusHtml = '✅ 제출 완료! 등급 확인 실패 (제출은 잘 완료됐어요)';
+      actionHtml = `<button class="btn-redo" onclick="openRecorder(this, ${n}, ${isRetry})">🔄 다시 녹음하러 가기</button>`;
+    }
+
+    row.innerHTML = `
+      <div class="attempt-top">
+        <div class="attempt-label">${numIcon[n]} ${n}${label}</div>
+        ${actionHtml}
+      </div>
+      <div class="status-txt">${statusHtml}</div>
+    `;
+    attemptsArea.appendChild(row);
+  }
+
+  if (allDone && isRetry) {
+    const banner = document.createElement('div');
+    banner.className = 'done-banner';
+    banner.textContent = '✅ 다시읽기 완료!';
+    attemptsArea.appendChild(banner);
+  }
+}
+
+function openRecorder(btn, attemptNum, isRetry) {
+  setBtnBusy(btn, '🎙️ 녹음 창으로 이동...');
+  const assignmentId = isRetry ? window.retryAssignmentId : window.currentAssignmentId;
+  const assignmentTitle = isRetry ? window.retryAssignmentTitle : window.currentAssignmentTitle;
+  const script = isRetry ? window.retryScript : window.currentScript;
+
+  const params = new URLSearchParams({
+    studentId: currentStudentId,
+    studentName: currentStudentName,
+    className: currentClassName,
+    classId: currentClassId,
+    assignmentId: assignmentId,
+    assignmentTitle: assignmentTitle,
+    attempt: attemptNum,
+    script: script,
+    isRetry: isRetry ? '1' : '0'
+  });
+  const url = RECORDER_PAGE_URL + '?' + params.toString();
+  window.open(url, '_blank');
+  document.getElementById('waitingBanner').innerHTML =
+    '<div class="waiting-banner">🎙️ 새 창에서 녹음을 진행해주세요. 녹음을 마치면 이 화면이 자동으로 업데이트돼요.</div>';
+}
+
+// 녹음 창(새 탭)에서 다시 이 화면으로 돌아오면(탭 전환/창 닫기 등) 자동으로 최신 상태를 다시 불러옵니다.
+// postMessage를 놓치거나, 학생이 녹음을 끝내지 않고 그냥 돌아온 경우에도 버튼이 계속 눌린 채로 남지 않도록 하기 위함입니다.
+window.addEventListener('focus', () => {
+  if (currentStudentId && document.getElementById('homeworkCard').style.display !== 'none') {
+    reloadHomework();
+  }
+});
+
+function reloadHomework() {
+  callApi('getHomeworkScreen', { studentId: currentStudentId }).then(res => {
+    if (res.error || res.noAssignment) return;
+    applyHomeworkData(res);
+  });
+}
+
+// ---- 지난 숙제 기록 ----
+document.getElementById('historyLinkBtn').addEventListener('click', () => {
+  document.getElementById('homeworkCard').style.display = 'none';
+  document.getElementById('historyCard').style.display = 'block';
+  document.getElementById('historyList').innerHTML = '<p class="hint">불러오는 중...</p>';
+  callApi('getStudentHistory', { studentId: currentStudentId }).then(res => renderHistory(res.list || []));
+});
+
+document.getElementById('backFromHistoryBtn').addEventListener('click', () => {
+  document.getElementById('historyCard').style.display = 'none';
+  document.getElementById('homeworkCard').style.display = 'block';
+});
+
+function renderHistory(list) {
+  const el = document.getElementById('historyList');
+  if (!list.length) {
+    el.innerHTML = '<p class="hint">아직 제출한 숙제가 없어요.</p>';
+    return;
+  }
+  el.innerHTML = '';
+  list.forEach(asg => {
+    const div = document.createElement('div');
+    div.className = 'history-item';
+    let attemptsHtml = '';
+    asg.attempts.forEach(a => {
+      const gradeText = a.grade && gradeInfo[a.grade]
+        ? `${gradeInfo[a.grade].icon} ${gradeInfo[a.grade].text}`
+        : (a.retryPending ? '분석 대기 중' : '등급 확인 실패');
+      attemptsHtml += `<div class="history-attempt">${a.attempt}번째 읽기 (${a.timestamp}) - ${gradeText}` +
+        (a.comment ? `<br>💬 선생님: ${a.comment}` : '') + `</div>`;
+    });
+    div.innerHTML = `<h3>${asg.assignmentTitle}</h3>${attemptsHtml}`;
+    el.appendChild(div);
+  });
+}
+</script>
+</body>
+</html>
