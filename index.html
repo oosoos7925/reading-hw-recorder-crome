@@ -155,6 +155,9 @@ const gradeInfo = {
   'Practice': { icon: '🤔', text: '다시 한번 읽어볼까요' }
 };
 const numIcon = { 1: '1️⃣', 2: '2️⃣', 3: '3️⃣' };
+function scoreLabel(a) {
+  return (a.score === null || a.score === undefined) ? '' : (a.score + '점 · ');
+}
 
 function setBtnBusy(btn, busyText) {
   if (!btn) return;
@@ -352,7 +355,7 @@ function renderAttemptsInto(containerId, attempts, isRetry) {
         actionHtml = `<button class="btn-locked" disabled>🔒 잠김</button>`;
       }
     } else if (info.grade && gradeInfo[info.grade]) {
-      statusHtml = `✅ 제출 완료! ${gradeInfo[info.grade].icon} ${gradeInfo[info.grade].text}` +
+      statusHtml = `✅ 제출 완료! ${scoreLabel(info)}${gradeInfo[info.grade].icon} ${gradeInfo[info.grade].text}` +
                    (info.comment ? `<br>💬 선생님: ${info.comment}` : '');
       actionHtml = `<button class="btn-redo" onclick="openRecorder(this, ${n}, ${isRetry})">🔄 다시 녹음하러 가기</button>`;
     } else if (info.retryPending) {
@@ -445,7 +448,7 @@ function renderHistory(list) {
     let attemptsHtml = '';
     asg.attempts.forEach(a => {
       const gradeText = a.grade && gradeInfo[a.grade]
-        ? `${gradeInfo[a.grade].icon} ${gradeInfo[a.grade].text}`
+        ? `${scoreLabel(a)}${gradeInfo[a.grade].icon} ${gradeInfo[a.grade].text}`
         : (a.retryPending ? '분석 대기 중' : '등급 확인 실패');
       attemptsHtml += `<div class="history-attempt">${a.attempt}번째 읽기 (${a.timestamp}) - ${gradeText}` +
         (a.comment ? `<br>💬 선생님: ${a.comment}` : '') + `</div>`;

@@ -32,6 +32,7 @@
   .banner.error { background:#fef2f2; color:var(--red); }
   .banner.info { background:#eff6ff; color:#1d4ed8; margin-top:12px; text-align:center; font-weight:600; }
   .result { text-align:center; margin-top:18px; font-size:17px; font-weight:700; }
+  .score-line { font-size:22px; color:var(--blue); margin:6px 0 2px; }
   audio { width:100%; margin-top:14px; }
 </style>
 </head>
@@ -218,9 +219,11 @@ function submitRecordingNow() {
           'Normal': '🙂 잘 읽었어요',
           'Practice': '🤔 다시 한번 읽어볼까요'
         }[res.grade] || (res.retryPending ? '나중에 등급이 확인되면 표시돼요' : '등급 확인 실패');
+        const scoreLine = (res.score === null || res.score === undefined) ? '' :
+          '<div class="score-line">' + res.score + '점 / 100</div>';
 
         resultArea.innerHTML =
-          '<div class="result">✅ 제출 완료!<br>' + gradeText + '</div>' +
+          '<div class="result">✅ 제출 완료!' + scoreLine + '<div>' + gradeText + '</div></div>' +
           '<div class="banner info">다시 녹음하거나 다음 번째 읽기를 하려면<br>이 창을 닫고 원래 화면으로 돌아가주세요.</div>' +
           '<button class="btn-close" id="closeBtn">이 창 닫고 돌아가기</button>';
 
