@@ -92,11 +92,21 @@
       <button class="primary" id="confirmClassBtn" style="width:100%;">확인</button>
     </div>
   </div>
+  <div id="passwordArea" style="display:none;">
+    <p class="msg info" id="pwMsg">암호를 입력해주세요. (처음이면 1111)</p>
+    <input type="text" id="passwordInput" placeholder="암호" autocomplete="off">
+    <div class="row-flex">
+      <button class="primary" id="confirmPasswordBtn" style="width:100%;">입장하기</button>
+    </div>
+  </div>
   <div id="loginMsg"></div>
 </div>
 
 <div class="card" id="homeworkCard" style="display:none;">
-  <div class="history-link" id="historyLinkBtn">📋 지난 숙제 기록 보기</div>
+  <div style="display:flex; justify-content:flex-end; gap:16px; margin-bottom:6px;">
+    <span class="history-link" id="pwChangeBtn" style="margin-bottom:0;">🔑 암호 변경</span>
+    <span class="history-link" id="historyLinkBtn" style="margin-bottom:0;">📋 지난 숙제 기록 보기</span>
+  </div>
   <div class="header-info">
     <span class="class-badge" id="classBadge"></span>
     <span class="student-name-big" id="studentNameBig"></span>
@@ -188,12 +198,17 @@ const nameInput = document.getElementById('nameInput');
 const goBtn = document.getElementById('goBtn');
 const loginMsg = document.getElementById('loginMsg');
 const classChoiceArea = document.getElementById('classChoiceArea');
+const passwordArea = document.getElementById('passwordArea');
+const passwordInput = document.getElementById('passwordInput');
+const pwMsg = document.getElementById('pwMsg');
+let pendingLogin = null; // 암호 확인 중인 학생 { studentId, name, classId }
 
 goBtn.addEventListener('click', () => {
   const name = nameInput.value.trim();
   if (!name) return;
   setBtnBusy(goBtn, '확인 중...');
   classChoiceArea.style.display = 'none';
+  passwordArea.style.display = 'none';
   loginMsg.innerHTML = '<div class="msg info">숙제 화면으로 이동 중...</div>';
 
   callApi('findStudentMatches', { name: name })
@@ -203,7 +218,7 @@ goBtn.addEventListener('click', () => {
         resetBtn(goBtn);
         loginMsg.innerHTML = '<div class="msg error">등록되지 않은 이름입니다. 선생님께 확인해주세요.</div>';
       } else if (matches.length === 1) {
-        enterHomework(matches[0].studentId, name, matches[0].classId);
+        proceedAfterMatch(matches[0], name);
       } else {
         resetBtn(goBtn);
         loginMsg.innerHTML = '';
@@ -236,8 +251,56 @@ confirmClassBtn.addEventListener('click', () => {
   setBtnBusy(confirmClassBtn, '확인 중...');
   setBtnBusy(goBtn);
   loginMsg.innerHTML = '<div class="msg info">숙제 화면으로 이동 중...</div>';
-  enterHomework(matches[idx].studentId, name, matches[idx].classId);
+  proceedAfterMatch(matches[idx], name);
 });
+
+// 이름(+반) 확인이 끝난 뒤: 그 반이 암호를 쓰면 암호 입력 단계로, 아니면 바로 숙제 화면으로
+function proceedAfterMatch(match, name) {
+  if (!match.passwordEnabled) {
+    enterHomework(match.studentId, name, match.classId);
+    return;
+  }
+  pendingLogin = { studentId: match.studentId, name: name, classId: match.classId };
+  resetBtn(goBtn);
+  resetBtn(confirmClassBtn);
+  loginMsg.innerHTML = '';
+  classChoiceArea.style.display = 'none';
+  pwMsg.className = 'msg info';
+  pwMsg.textContent = '암호를 입력해주세요. (처음이면 1111)';
+  passwordInput.value = '1111';
+  passwordArea.style.display = 'block';
+  passwordInput.focus();
+  passwordInput.select();
+}
+
+const confirmPasswordBtn = document.getElementById('confirmPasswordBtn');
+confirmPasswordBtn.addEventListener('click', submitPassword);
+passwordInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') submitPassword(); });
+
+function submitPassword() {
+  const pw = passwordInput.value;
+  if (!pw || !pendingLogin) return;
+  setBtnBusy(confirmPasswordBtn, '확인 중...');
+  callApi('verifyStudentPassword', { studentId: pendingLogin.studentId, password: pw })
+    .then(res => {
+      if (!res.success) {
+        resetBtn(confirmPasswordBtn);
+        pwMsg.className = 'msg error';
+        pwMsg.textContent = res.message || '암호가 틀렸습니다. 다시 입력해주세요.';
+        return;
+      }
+      passwordArea.style.display = 'none';
+      const login = pendingLogin;
+      pendingLogin = null;
+      resetBtn(confirmPasswordBtn);
+      enterHomework(login.studentId, login.name, login.classId);
+    })
+    .catch(() => {
+      resetBtn(confirmPasswordBtn);
+      pwMsg.className = 'msg error';
+      pwMsg.textContent = '오류가 발생했습니다. 다시 시도해주세요.';
+    });
+}
 
 function enterHomework(studentId, studentName, classId) {
   currentStudentId = studentId;
@@ -324,8 +387,10 @@ function goToLoginScreen() {
   document.getElementById('nameInput').value = '';
   document.getElementById('loginMsg').innerHTML = '';
   document.getElementById('classChoiceArea').style.display = 'none';
+  document.getElementById('passwordArea').style.display = 'none';
   resetBtn(goBtn);
   resetBtn(confirmClassBtn);
+  pendingLogin = null;
   currentStudentId = ''; currentStudentName = ''; currentClassId = ''; currentClassName = '';
 }
 
@@ -428,6 +493,20 @@ document.getElementById('historyLinkBtn').addEventListener('click', () => {
   document.getElementById('historyCard').style.display = 'block';
   document.getElementById('historyList').innerHTML = '<p class="hint">불러오는 중...</p>';
   callApi('getStudentHistory', { studentId: currentStudentId }).then(res => renderHistory(res.list || []));
+});
+
+// ---- 암호 변경 ----
+document.getElementById('pwChangeBtn').addEventListener('click', () => {
+  const newPw = prompt('새 암호를 입력하세요');
+  if (newPw === null) return;
+  const trimmed = newPw.trim();
+  if (!trimmed) { alert('암호를 입력해주세요.'); return; }
+  callApi('changeStudentPassword', { studentId: currentStudentId, password: trimmed })
+    .then(res => {
+      if (res.success) alert('암호가 변경됐어요!');
+      else alert(res.message || '암호 변경에 실패했어요.');
+    })
+    .catch(() => alert('오류가 발생했습니다. 다시 시도해주세요.'));
 });
 
 document.getElementById('backFromHistoryBtn').addEventListener('click', () => {
