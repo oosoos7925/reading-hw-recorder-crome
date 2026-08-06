@@ -184,6 +184,15 @@ function resetBtn(btn) {
   btn.style.cursor = '';
   if (btn.dataset.origText) btn.textContent = btn.dataset.origText;
 }
+// resetBtn과 달리 다시 눌러지게 만들진 않고, 원래 글자만 되돌리면서 비활성 상태는 유지한다.
+// (다음 단계로 넘어가서 이 버튼을 또 누를 필요가 없을 때, "확인 중..." 같은 문구만 없애고 싶을 때 씀)
+function disableBtnKeepLabel(btn) {
+  if (!btn) return;
+  btn.disabled = true;
+  btn.style.opacity = '0.55';
+  btn.style.cursor = 'not-allowed';
+  if (btn.dataset.origText) btn.textContent = btn.dataset.origText;
+}
 
 // ---- 녹음 페이지로부터 완료 신호 수신 ----
 window.addEventListener('message', (event) => {
@@ -261,8 +270,10 @@ function proceedAfterMatch(match, name) {
     return;
   }
   pendingLogin = { studentId: match.studentId, name: name, classId: match.classId };
-  resetBtn(goBtn);
-  resetBtn(confirmClassBtn);
+  // 암호 입력 단계로 넘어간 뒤에는 "숙제하기로 이동"을 다시 누를 필요가 없고, 눌러지면
+  // 학생이 헷갈릴 수 있어서 계속 비활성 상태로 둔다 (글자만 원래대로 되돌림).
+  disableBtnKeepLabel(goBtn);
+  disableBtnKeepLabel(confirmClassBtn);
   loginMsg.innerHTML = '';
   classChoiceArea.style.display = 'none';
   pwMsg.className = 'msg info';
@@ -289,10 +300,14 @@ function submitPassword() {
         pwMsg.textContent = res.message || '암호가 틀렸습니다. 다시 입력해주세요.';
         return;
       }
-      passwordArea.style.display = 'none';
+      // 암호 확인 후 다음 화면(getHomeworkScreen)을 불러오는 동안 화면이 갑자기 텅 비어 보이면
+      // 학생이 당황할 수 있어서, 입력창/버튼을 바로 감추지 않고 "이동 중" 상태를 계속 보여준다.
+      pwMsg.className = 'msg info';
+      pwMsg.textContent = '✅ 확인됐어요!';
+      setBtnBusy(confirmPasswordBtn, '이동 중...');
+      loginMsg.innerHTML = '<div class="msg info">숙제 화면으로 이동 중...</div>';
       const login = pendingLogin;
       pendingLogin = null;
-      resetBtn(confirmPasswordBtn);
       enterHomework(login.studentId, login.name, login.classId);
     })
     .catch(() => {
@@ -312,17 +327,20 @@ function enterHomework(studentId, studentName, classId) {
         loginMsg.innerHTML = '<div class="msg error">' + res.error + '</div>';
         resetBtn(goBtn);
         resetBtn(confirmClassBtn);
+        resetBtn(confirmPasswordBtn);
         return;
       }
       if (res.noAssignment) {
         loginMsg.innerHTML = '<div class="msg info">' + res.className + ' - 아직 등록된 과제가 없어요. 선생님께 확인해주세요.</div>';
         resetBtn(goBtn);
         resetBtn(confirmClassBtn);
+        resetBtn(confirmPasswordBtn);
         return;
       }
       currentClassName = res.className;
       resetBtn(goBtn);
       resetBtn(confirmClassBtn);
+      resetBtn(confirmPasswordBtn);
       document.getElementById('loginCard').style.display = 'none';
       document.getElementById('homeworkCard').style.display = 'block';
       document.getElementById('classBadge').textContent = res.className;
@@ -333,6 +351,7 @@ function enterHomework(studentId, studentName, classId) {
       loginMsg.innerHTML = '<div class="msg error">오류가 발생했습니다. 다시 시도해주세요.</div>';
       resetBtn(goBtn);
       resetBtn(confirmClassBtn);
+      resetBtn(confirmPasswordBtn);
     });
 }
 
@@ -390,6 +409,7 @@ function goToLoginScreen() {
   document.getElementById('passwordArea').style.display = 'none';
   resetBtn(goBtn);
   resetBtn(confirmClassBtn);
+  resetBtn(confirmPasswordBtn);
   pendingLogin = null;
   currentStudentId = ''; currentStudentName = ''; currentClassId = ''; currentClassName = '';
 }
@@ -501,12 +521,35 @@ document.getElementById('pwChangeBtn').addEventListener('click', () => {
   if (newPw === null) return;
   const trimmed = newPw.trim();
   if (!trimmed) { alert('암호를 입력해주세요.'); return; }
+
+  // 잘못 입력해서 엉뚱한 암호로 바뀌는 걸 막기 위해 한 번 더 입력받아 서로 같은지 확인
+  const confirmPw = prompt('확인을 위해 암호를 한 번 더 입력해주세요');
+  if (confirmPw === null) return;
+  if (confirmPw.trim() !== trimmed) {
+    alert('입력하신 두 암호가 서로 달라요. 처음부터 다시 시도해주세요.');
+    return;
+  }
+
+  const pwBtn = document.getElementById('pwChangeBtn');
+  const origText = pwBtn.textContent;
+  pwBtn.textContent = '⏳ 변경 중...';
+  pwBtn.style.pointerEvents = 'none';
+  pwBtn.style.opacity = '0.55';
+
   callApi('changeStudentPassword', { studentId: currentStudentId, password: trimmed })
     .then(res => {
+      pwBtn.textContent = origText;
+      pwBtn.style.pointerEvents = '';
+      pwBtn.style.opacity = '';
       if (res.success) alert('암호가 변경됐어요!');
       else alert(res.message || '암호 변경에 실패했어요.');
     })
-    .catch(() => alert('오류가 발생했습니다. 다시 시도해주세요.'));
+    .catch(() => {
+      pwBtn.textContent = origText;
+      pwBtn.style.pointerEvents = '';
+      pwBtn.style.opacity = '';
+      alert('오류가 발생했습니다. 다시 시도해주세요.');
+    });
 });
 
 document.getElementById('backFromHistoryBtn').addEventListener('click', () => {
