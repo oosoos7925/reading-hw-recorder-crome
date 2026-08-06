@@ -84,8 +84,7 @@ if (!ctx.studentId || !ctx.assignmentId || !ctx.script) {
     '<div class="banner error">필요한 정보가 없어요. 원래 숙제 화면에서 다시 시도해주세요.</div>';
 }
 
-let mediaRecorder, audioChunks = [], recognizer = null;
-let recognizedTextBuffer = '';
+let mediaRecorder, audioChunks = [];
 let recordingTimer = null, autoStopTimer = null, recordSeconds = 0;
 let isRecordingNow = false;
 let recordedBlob = null;
@@ -108,7 +107,6 @@ recordBtn.addEventListener('click', startRecording);
 
 function startRecording() {
   audioChunks = [];
-  recognizedTextBuffer = '';
   statusText.textContent = '';
   reviewArea.innerHTML = '';
   resultArea.innerHTML = '';
@@ -127,22 +125,9 @@ function startRecording() {
     mediaRecorder.start();
     isRecordingNow = true;
 
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SR) {
-      recognizer = new SR();
-      recognizer.lang = 'en-US';
-      recognizer.continuous = true;
-      recognizer.interimResults = false;
-      recognizer.onresult = (e) => {
-        for (let i = e.resultIndex; i < e.results.length; i++) {
-          if (e.results[i].isFinal) recognizedTextBuffer += e.results[i][0].transcript + ' ';
-        }
-      };
-      recognizer.onerror = () => {};
-      recognizer.start();
-    } else {
-      recognizer = null;
-    }
+    // 브라우저 내장 음성인식(webkitSpeechRecognition)은 여기서 쓰지 않는다.
+    // 서버 파라미터로 전혀 조정이 안 되고 문법/문맥 보정이 심해서, "발음을 있는 그대로" 채점한다는
+    // 목적에 맞지 않기 때문. 인식은 항상 서버(Groq Whisper, Code.js)에서 처리한다.
 
     controls.innerHTML = '<button class="btn-stop" id="stopBtn">⏹ 녹음 종료</button>';
     document.getElementById('stopBtn').addEventListener('click', stopRecording);
@@ -165,7 +150,6 @@ function startRecording() {
 function stopRecording() {
   clearInterval(recordingTimer);
   clearTimeout(autoStopTimer);
-  if (recognizer) { try { recognizer.stop(); } catch (e) {} }
   if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
 }
 
@@ -217,8 +201,7 @@ function submitRecordingNow() {
           assignmentId: ctx.assignmentId,
           attemptNumber: Number(ctx.attempt),
           mimeType: 'audio/webm',
-          base64Data: base64Data,
-          recognizedText: recognizedTextBuffer.trim()
+          base64Data: base64Data
         }
       })
     })
