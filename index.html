@@ -75,6 +75,11 @@
   .history-attempt:first-child { border-top:none; }
   button.btn-gray-full { background:#f3f4f6; color:#374151; border:1px solid #d1d5db; border-radius:10px;
                           padding:12px 16px; font-size:14px; width:100%; margin-top:16px; cursor:pointer; }
+
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(17,24,39,0.5); z-index:1000;
+                    align-items:center; justify-content:center; padding:20px; }
+  .modal-overlay.open { display:flex; }
+  .modal-overlay .card { width:100%; }
 </style>
 </head>
 <body>
@@ -137,6 +142,23 @@
   <h1>📋 지난 숙제 기록</h1>
   <div id="historyList"></div>
   <button class="btn-gray-full" id="backFromHistoryBtn">돌아가기</button>
+</div>
+
+<div class="modal-overlay" id="pwModalOverlay">
+  <div class="card" style="max-width:380px;">
+    <h1>🔑 암호 변경</h1>
+    <div id="pwModalFields">
+      <input type="text" id="pwModalNew" placeholder="새 암호" autocomplete="off">
+      <div class="row-flex" style="flex-direction:column;">
+        <input type="text" id="pwModalConfirm" placeholder="새 암호 확인" autocomplete="off">
+      </div>
+    </div>
+    <div id="pwModalMsg"></div>
+    <div class="row-flex">
+      <button class="btn-gray-full" id="pwModalCancelBtn" style="margin-top:12px;">취소</button>
+      <button class="primary" id="pwModalConfirmBtn" style="width:100%; margin-top:12px;">변경하기</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -516,41 +538,62 @@ document.getElementById('historyLinkBtn').addEventListener('click', () => {
 });
 
 // ---- 암호 변경 ----
-document.getElementById('pwChangeBtn').addEventListener('click', () => {
-  const newPw = prompt('새 암호를 입력하세요');
-  if (newPw === null) return;
-  const trimmed = newPw.trim();
-  if (!trimmed) { alert('암호를 입력해주세요.'); return; }
+// (브라우저 기본 prompt()/alert()는 상단에 "oosoos7925.github.io 내용:" 같은 주소가 그대로
+//  노출돼서, 대신 카드 스타일과 맞춘 자체 모달을 씀)
+const pwModalOverlay = document.getElementById('pwModalOverlay');
+const pwModalFields = document.getElementById('pwModalFields');
+const pwModalNew = document.getElementById('pwModalNew');
+const pwModalConfirm = document.getElementById('pwModalConfirm');
+const pwModalMsg = document.getElementById('pwModalMsg');
+const pwModalCancelBtn = document.getElementById('pwModalCancelBtn');
+const pwModalConfirmBtn = document.getElementById('pwModalConfirmBtn');
 
-  // 잘못 입력해서 엉뚱한 암호로 바뀌는 걸 막기 위해 한 번 더 입력받아 서로 같은지 확인
-  const confirmPw = prompt('확인을 위해 암호를 한 번 더 입력해주세요');
-  if (confirmPw === null) return;
-  if (confirmPw.trim() !== trimmed) {
-    alert('입력하신 두 암호가 서로 달라요. 처음부터 다시 시도해주세요.');
+function openPwModal() {
+  pwModalNew.value = '';
+  pwModalConfirm.value = '';
+  pwModalMsg.innerHTML = '';
+  pwModalFields.style.display = '';
+  pwModalConfirmBtn.style.display = '';
+  pwModalCancelBtn.textContent = '취소';
+  pwModalOverlay.classList.add('open');
+  pwModalNew.focus();
+}
+
+document.getElementById('pwChangeBtn').addEventListener('click', openPwModal);
+
+pwModalCancelBtn.addEventListener('click', () => {
+  pwModalOverlay.classList.remove('open');
+});
+
+pwModalConfirmBtn.addEventListener('click', () => {
+  const trimmed = pwModalNew.value.trim();
+  const confirmTrimmed = pwModalConfirm.value.trim();
+  if (!trimmed) { pwModalMsg.innerHTML = '<div class="msg error">암호를 입력해주세요.</div>'; return; }
+  if (confirmTrimmed !== trimmed) {
+    pwModalMsg.innerHTML = '<div class="msg error">입력하신 두 암호가 서로 달라요. 다시 확인해주세요.</div>';
     return;
   }
 
-  const pwBtn = document.getElementById('pwChangeBtn');
-  const origText = pwBtn.textContent;
-  pwBtn.textContent = '⏳ 변경 중...';
-  pwBtn.style.pointerEvents = 'none';
-  pwBtn.style.opacity = '0.55';
-
+  setBtnBusy(pwModalConfirmBtn, '변경 중...');
   callApi('changeStudentPassword', { studentId: currentStudentId, password: trimmed })
     .then(res => {
-      pwBtn.textContent = origText;
-      pwBtn.style.pointerEvents = '';
-      pwBtn.style.opacity = '';
-      if (res.success) alert('암호가 변경됐어요!');
-      else alert(res.message || '암호 변경에 실패했어요.');
+      resetBtn(pwModalConfirmBtn);
+      if (res.success) {
+        pwModalFields.style.display = 'none';
+        pwModalConfirmBtn.style.display = 'none';
+        pwModalCancelBtn.textContent = '닫기';
+        pwModalMsg.innerHTML = '<div class="msg info" style="color:var(--green); background:#f0fdf4;">✅ 암호가 변경됐어요!</div>';
+      } else {
+        pwModalMsg.innerHTML = '<div class="msg error">' + (res.message || '암호 변경에 실패했어요.') + '</div>';
+      }
     })
     .catch(() => {
-      pwBtn.textContent = origText;
-      pwBtn.style.pointerEvents = '';
-      pwBtn.style.opacity = '';
-      alert('오류가 발생했습니다. 다시 시도해주세요.');
+      resetBtn(pwModalConfirmBtn);
+      pwModalMsg.innerHTML = '<div class="msg error">오류가 발생했습니다. 다시 시도해주세요.</div>';
     });
 });
+
+pwModalConfirm.addEventListener('keydown', (e) => { if (e.key === 'Enter') pwModalConfirmBtn.click(); });
 
 document.getElementById('backFromHistoryBtn').addEventListener('click', () => {
   document.getElementById('historyCard').style.display = 'none';
