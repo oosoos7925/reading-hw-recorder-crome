@@ -288,7 +288,7 @@ confirmClassBtn.addEventListener('click', () => {
 // 이름(+반) 확인이 끝난 뒤: 그 반이 암호를 쓰면 암호 입력 단계로, 아니면 바로 숙제 화면으로
 function proceedAfterMatch(match, name) {
   if (!match.passwordEnabled) {
-    enterHomework(match.studentId, name, match.classId);
+    enterHomework(match.studentId, name, match.classId, false);
     return;
   }
   pendingLogin = { studentId: match.studentId, name: name, classId: match.classId };
@@ -330,7 +330,7 @@ function submitPassword() {
       loginMsg.innerHTML = '<div class="msg info">숙제 화면으로 이동 중...</div>';
       const login = pendingLogin;
       pendingLogin = null;
-      enterHomework(login.studentId, login.name, login.classId);
+      enterHomework(login.studentId, login.name, login.classId, true);
     })
     .catch(() => {
       resetBtn(confirmPasswordBtn);
@@ -339,10 +339,11 @@ function submitPassword() {
     });
 }
 
-function enterHomework(studentId, studentName, classId) {
+function enterHomework(studentId, studentName, classId, passwordEnabled) {
   currentStudentId = studentId;
   currentStudentName = studentName;
   currentClassId = classId;
+  document.getElementById('pwChangeBtn').style.display = passwordEnabled ? '' : 'none';
   callApi('getHomeworkScreen', { studentId: studentId })
     .then(res => {
       if (res.error) {
