@@ -56,6 +56,7 @@
   .attempt { padding:14px; border:1px solid #e5e7eb; border-radius:12px; margin-top:10px; }
   .attempt.locked { background:#f9fafb; opacity:0.6; }
   .attempt-top { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .attempt-actions { display:flex; align-items:center; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
   .attempt-label { font-weight:700; font-size:15px; }
   .status-txt { font-size:13px; color:var(--gray); margin-top:6px; line-height:1.5; }
   button.btn-go { background:var(--blue); color:#fff; border:none; border-radius:10px;
@@ -64,6 +65,10 @@
                        padding:10px 16px; font-size:13px; font-weight:700; cursor:not-allowed; }
   button.btn-redo { background:#f3f4f6; color:#374151; border:1px solid #d1d5db; border-radius:10px;
                      padding:7px 12px; font-size:12px; cursor:pointer; }
+  button.btn-play { background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; border-radius:10px;
+                     padding:7px 12px; font-size:12px; font-weight:700; cursor:pointer; }
+  .audio-holder { margin-top:8px; }
+  .audio-holder audio { width:100%; display:block; }
   .waiting-banner { margin-top:16px; padding:12px 14px; border-radius:10px; font-size:14px;
                      text-align:center; background:#eff6ff; color:#1d4ed8; }
   .done-banner { margin-top:16px; padding:16px 14px; border-radius:12px; font-size:16px; font-weight:800;
@@ -453,33 +458,41 @@ function renderAttemptsInto(containerId, attempts, isRetry) {
     const row = document.createElement('div');
     row.className = 'attempt' + (!info && !unlocked ? ' locked' : '');
 
-    let statusHtml, actionHtml;
+    // 제출된 시도는 녹음 파일(driveFileId)이 있으면 "▶ 다시듣기" 버튼을 재녹음 버튼 옆에 나란히 붙인다.
+    // 카드 자체의 높이/구성은 접힌 상태(기본값)에서는 기존과 동일하게 유지되고, 눌렀을 때만
+    // status-txt 아래에 오디오 플레이어가 펼쳐진다 (선생님 관리 화면의 "녹음듣기"와 같은 방식).
+    const playBtnHtml = (info && info.driveFileId)
+      ? `<button class="btn-play" onclick="toggleAudio(this,'${info.driveFileId}')">▶ 다시듣기</button>`
+      : '';
+
+    let statusHtml, redoBtnHtml;
     if (!info) {
       if (unlocked) {
         statusHtml = '아직 제출하지 않음';
-        actionHtml = `<button class="btn-go" onclick="openRecorder(this, ${n}, ${isRetry})">🎙️ 녹음하러 가기</button>`;
+        redoBtnHtml = `<button class="btn-go" onclick="openRecorder(this, ${n}, ${isRetry})">🎙️ 녹음하러 가기</button>`;
       } else {
         statusHtml = '이전 읽기를 먼저 완료해주세요';
-        actionHtml = `<button class="btn-locked" disabled>🔒 잠김</button>`;
+        redoBtnHtml = `<button class="btn-locked" disabled>🔒 잠김</button>`;
       }
     } else if (info.grade && gradeInfo[info.grade]) {
       statusHtml = `✅ 제출 완료! ${scoreLabel(info)}${gradeInfo[info.grade].icon} ${gradeInfo[info.grade].text}` +
                    (info.comment ? `<br>💬 선생님: ${info.comment}` : '');
-      actionHtml = `<button class="btn-redo" onclick="openRecorder(this, ${n}, ${isRetry})">🔄 다시 녹음하러 가기</button>`;
+      redoBtnHtml = `<button class="btn-redo" onclick="openRecorder(this, ${n}, ${isRetry})">🔄 다시 녹음하러 가기</button>`;
     } else if (info.retryPending) {
       statusHtml = '✅ 제출 완료! 나중에 등급이 확인되면 표시돼요 (제출은 잘 완료됐어요)';
-      actionHtml = `<button class="btn-redo" onclick="openRecorder(this, ${n}, ${isRetry})">🔄 다시 녹음하러 가기</button>`;
+      redoBtnHtml = `<button class="btn-redo" onclick="openRecorder(this, ${n}, ${isRetry})">🔄 다시 녹음하러 가기</button>`;
     } else {
       statusHtml = '✅ 제출 완료! 등급 확인 실패 (제출은 잘 완료됐어요)';
-      actionHtml = `<button class="btn-redo" onclick="openRecorder(this, ${n}, ${isRetry})">🔄 다시 녹음하러 가기</button>`;
+      redoBtnHtml = `<button class="btn-redo" onclick="openRecorder(this, ${n}, ${isRetry})">🔄 다시 녹음하러 가기</button>`;
     }
 
     row.innerHTML = `
       <div class="attempt-top">
         <div class="attempt-label">${numIcon[n]} ${n}${label}</div>
-        ${actionHtml}
+        <div class="attempt-actions">${playBtnHtml}${redoBtnHtml}</div>
       </div>
       <div class="status-txt">${statusHtml}</div>
+      <div class="audio-holder" style="display:none;"></div>
     `;
     attemptsArea.appendChild(row);
   }
@@ -513,6 +526,44 @@ function openRecorder(btn, attemptNum, isRetry) {
   window.open(url, '_blank');
   document.getElementById('waitingBanner').innerHTML =
     '<div class="waiting-banner">🎙️ 새 창에서 녹음을 진행해주세요. 녹음을 마치면 이 화면이 자동으로 업데이트돼요.</div>';
+}
+
+// ---- 제출한 녹음 다시듣기 (선생님 관리 화면의 "녹음 듣기"와 같은 방식: 한 번 불러오면
+// 다시 서버에 요청하지 않고 보이기/접기만 토글) ----
+function toggleAudio(btn, driveFileId) {
+  const holder = btn.closest('.attempt').querySelector('.audio-holder');
+
+  if (holder.dataset.loaded === '1') {
+    const isShown = holder.style.display !== 'none';
+    if (isShown) {
+      const audioEl = holder.querySelector('audio');
+      if (audioEl) audioEl.pause();
+      holder.style.display = 'none';
+      btn.textContent = '▶ 다시듣기';
+    } else {
+      holder.style.display = 'block';
+      btn.textContent = '🔽 접기';
+    }
+    return;
+  }
+
+  setBtnBusy(btn, '불러오는 중...');
+  callApi('getRecordingAudio', { studentId: currentStudentId, driveFileId: driveFileId })
+    .then(res => {
+      resetBtn(btn);
+      if (!res.success) {
+        alert(res.message || '녹음을 불러오지 못했어요.');
+        return;
+      }
+      holder.innerHTML = `<audio controls src="data:${res.mimeType};base64,${res.base64}"></audio>`;
+      holder.dataset.loaded = '1';
+      holder.style.display = 'block';
+      btn.textContent = '🔽 접기';
+    })
+    .catch(() => {
+      resetBtn(btn);
+      alert('오류가 발생했습니다. 다시 시도해주세요.');
+    });
 }
 
 // 녹음 창(새 탭)에서 다시 이 화면으로 돌아오면(탭 전환/창 닫기 등) 자동으로 최신 상태를 다시 불러옵니다.
