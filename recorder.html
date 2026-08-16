@@ -66,6 +66,7 @@
   audio { width:100%; margin-top:14px; }
   .back-link { display:inline-block; font-size:13px; color:var(--ink-light); cursor:pointer; font-weight:700;
                 text-decoration:underline; text-underline-offset:2px; margin-bottom:12px; }
+  .back-link.disabled { opacity:0.35; pointer-events:none; cursor:not-allowed; }
 </style>
 </head>
 <body>
@@ -163,10 +164,17 @@ const resultArea = document.getElementById('resultArea');
 recordBtn.addEventListener('click', startRecording);
 
 // ---- 녹음 없이 이전 화면(숙제 화면)으로 돌아가기 ----
-// 이 페이지는 숙제 화면에서 window.open()으로 열린 새 창/탭이라, 그냥 닫으면 원래 숙제
-// 화면으로 자연스럽게 돌아간다. 녹음 중일 때는 beforeunload 경고가 그대로 뜨므로
-// (아래 window.addEventListener('beforeunload', ...)) 녹음 중 실수로 나가는 것도 막아준다.
-document.getElementById('backBtn').addEventListener('click', () => {
+// 녹음을 시작하기 전까지만 쓸 수 있고(녹음이 시작되면 disabled 처리, 아래 startRecording 참고),
+// 일단 녹음이 시작되면 제출을 마쳐야만 나갈 수 있다.
+// 이 페이지는 숙제 화면에서 window.open()으로 열린 새 창/탭이라, 닫으면 원래 숙제 화면으로
+// 자연스럽게 돌아간다. 그런데 숙제 화면 쪽 "다시 녹음하러 가기" 버튼이 focus 이벤트만 믿고
+// 있으면(모바일 브라우저에서는 focus가 늦게 오거나 아예 안 올 수 있음) 몇 분씩 비활성 상태로
+// 남아있을 수 있어서, postMessage로 즉시 알려줘서 바로 다시 활성화되게 한다.
+const backBtn = document.getElementById('backBtn');
+backBtn.addEventListener('click', () => {
+  try {
+    if (window.opener) window.opener.postMessage({ type: 'readingHwRecordingCancelled' }, '*');
+  } catch (e) {}
   if (window.opener) {
     window.close();
   } else {
@@ -179,6 +187,9 @@ function startRecording() {
   statusText.textContent = '';
   reviewArea.innerHTML = '';
   resultArea.innerHTML = '';
+  // 일단 녹음을 시도하는 순간부터는 제출을 마쳐야 나갈 수 있도록 잠근다
+  // (마이크 권한이 거부되면 아래 .catch()에서 다시 풀어준다).
+  backBtn.classList.add('disabled');
 
   navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
     mediaRecorder = new MediaRecorder(stream);
@@ -212,6 +223,7 @@ function startRecording() {
       timerText.textContent = mm + ':' + ss;
     }, 1000);
   }).catch(() => {
+    backBtn.classList.remove('disabled'); // 녹음이 실제로 시작되지 못했으니 다시 나갈 수 있게 풀어준다
     statusText.innerHTML = '<div class="banner error">마이크 접근이 거부되었습니다. 브라우저 마이크 권한을 허용한 뒤 다시 시도해주세요.</div>';
   });
 }
@@ -294,6 +306,7 @@ function submitRecordingNow() {
           '<div class="result">✅ 제출 완료!' + scoreLine + '<div>' + gradeText + '</div></div>' +
           '<div class="banner info">다시 녹음하거나 다음 번째 읽기를 하려면<br>이 창을 닫고 원래 화면으로 돌아가주세요.</div>' +
           '<button class="btn-close" id="closeBtn">이 창 닫고 돌아가기</button>';
+        backBtn.style.display = 'none'; // 제출 완료 후에는 위 닫기 버튼이 그 역할을 대신함
 
         if (res.grade === 'Good') launchConfetti();
         notifyOpenerAndMaybeClose();

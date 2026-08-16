@@ -286,9 +286,14 @@ function disableBtnKeepLabel(btn) {
   if (btn.dataset.origText) btn.textContent = btn.dataset.origText;
 }
 
-// ---- 녹음 페이지로부터 완료 신호 수신 ----
+// ---- 녹음 페이지로부터 완료/취소 신호 수신 ----
+// 녹음을 마쳤을 때(readingHwRecordingComplete)뿐 아니라, 녹음 없이 "이전 화면으로"를 눌러
+// 돌아왔을 때(readingHwRecordingCancelled)도 즉시 처리한다. focus 이벤트만 믿으면 일부
+// 모바일 브라우저에서 몇 분씩 늦게 오거나 아예 안 와서, "다시 녹음하러 가기" 버튼이
+// 계속 비활성 상태로 남는 문제가 있었기 때문.
 window.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'readingHwRecordingComplete') {
+  const type = event.data && event.data.type;
+  if (type === 'readingHwRecordingComplete' || type === 'readingHwRecordingCancelled') {
     document.getElementById('waitingBanner').innerHTML = '';
     reloadHomework();
   }
