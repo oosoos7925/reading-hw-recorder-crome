@@ -86,13 +86,10 @@
 
   .attempt { position:relative; padding:14px; border:1px solid var(--line); border-radius:12px; margin-top:10px; background:#fff; }
   .attempt.locked { background:#F5F6F8; opacity:0.6; }
-  .attempt-top { display:flex; align-items:center; justify-content:space-between; gap:10px; }
-  .attempt-actions { display:flex; align-items:center; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
-  .attempt-label { font-family:var(--font); font-weight:700; font-size:15px; color:var(--ink); }
+  .attempt-top { display:flex; flex-direction:column; align-items:flex-start; gap:8px; }
+  .attempt-actions { display:flex; align-items:center; gap:6px; flex-wrap:wrap; justify-content:flex-start; width:100%; }
+  .attempt-label { font-family:var(--font); font-weight:700; font-size:15px; color:var(--ink); white-space:nowrap; }
   .status-txt { font-size:13px; color:var(--ink-light); margin-top:6px; line-height:1.5; }
-  .star-row { margin-top:4px; }
-  .star { font-size:15px; opacity:0.25; filter:grayscale(1); margin-right:1px; }
-  .star.filled { opacity:1; filter:none; }
   button.btn-go { background:var(--teal); color:#fff; border:none; border-radius:10px;
                    padding:10px 16px; font-size:13px; cursor:pointer; min-height:40px;
                    box-shadow:0 2px 6px rgba(20,184,166,0.35); }
@@ -225,20 +222,14 @@ let currentStudentId = '', currentStudentName = '', currentClassId = '', current
 let hasCelebrated = false; // 이번 로그인 동안 완료 축하 효과를 이미 보여줬는지
 
 const gradeInfo = {
-  'Good':     { icon: '😃', text: '참 잘 읽었어요', stars: 3 },
-  'Normal':   { icon: '🙂', text: '잘 읽었어요', stars: 2 },
-  'Practice': { icon: '🤔', text: '다시 한번 읽어볼까요', stars: 1 }
+  'Good':     { icon: '😃', text: '참 잘 읽었어요' },
+  'Normal':   { icon: '🙂', text: '잘 읽었어요' },
+  'Practice': { icon: '🤔', text: '다시 한번 읽어볼까요' }
 };
 const numIcon = { 1: '1️⃣', 2: '2️⃣', 3: '3️⃣' };
 function scoreLabel(a) {
   return (a.score === null || a.score === undefined) ? '' : (a.score + '점 · ');
 }
-function starsHtml(n) {
-  let out = '<div class="star-row">';
-  for (let i = 0; i < 3; i++) out += `<span class="star${i < n ? ' filled' : ''}">⭐</span>`;
-  return out + '</div>';
-}
-
 // ---- 축하 컨페티(색종이) 효과 ----
 function launchConfetti() {
   const colors = ['#4C6FFF', '#14B8A6', '#F59E0B', '#8B93A7', '#3853D6'];
@@ -556,8 +547,7 @@ function renderAttemptsInto(containerId, attempts, isRetry) {
       }
     } else if (info.grade && gradeInfo[info.grade]) {
       statusHtml = `✅ 제출 완료! ${scoreLabel(info)}${gradeInfo[info.grade].icon} ${gradeInfo[info.grade].text}` +
-                   starsHtml(gradeInfo[info.grade].stars) +
-                   (info.comment ? `💬 선생님: ${info.comment}` : '');
+                   (info.comment ? `<br>💬 선생님: ${info.comment}` : '');
       redoBtnHtml = `<button class="btn-redo" onclick="openRecorder(this, ${n}, ${isRetry})">🔄 다시 녹음하러 가기</button>`;
     } else if (info.retryPending) {
       statusHtml = '✅ 제출 완료! 나중에 등급이 확인되면 표시돼요 (제출은 잘 완료됐어요)';
@@ -746,7 +736,7 @@ function renderHistory(list) {
     let attemptsHtml = '';
     asg.attempts.forEach(a => {
       const gradeText = a.grade && gradeInfo[a.grade]
-        ? `${scoreLabel(a)}${gradeInfo[a.grade].icon} ${gradeInfo[a.grade].text}` + (a.grade ? starsHtml(gradeInfo[a.grade].stars) : '')
+        ? `${scoreLabel(a)}${gradeInfo[a.grade].icon} ${gradeInfo[a.grade].text}`
         : (a.retryPending ? '분석 대기 중' : '등급 확인 실패');
       attemptsHtml += `<div class="history-attempt">${a.attempt}번째 읽기 (${a.timestamp}) - ${gradeText}` +
         (a.comment ? `<br>💬 선생님: ${a.comment}` : '') + `</div>`;

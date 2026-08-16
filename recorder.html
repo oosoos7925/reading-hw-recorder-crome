@@ -63,9 +63,6 @@
   .banner.info { background:#EEF2FF; border-left:4px solid var(--primary); margin-top:12px; text-align:center; font-weight:700; }
   .result { text-align:center; margin-top:18px; font-size:18px; font-family:var(--font); font-weight:700; color:var(--ink); }
   .score-line { font-size:22px; color:var(--ink); margin:6px 0 2px; font-family:var(--font); font-weight:800; }
-  .star-row { margin:6px 0 2px; }
-  .star { font-size:20px; opacity:0.25; filter:grayscale(1); margin:0 1px; }
-  .star.filled { opacity:1; filter:none; }
   audio { width:100%; margin-top:14px; }
 </style>
 </head>
@@ -116,12 +113,6 @@ document.getElementById('scriptText').textContent = ctx.script;
 if (!ctx.studentId || !ctx.assignmentId || !ctx.script) {
   document.getElementById('controls').innerHTML =
     '<div class="banner error">필요한 정보가 없어요. 원래 숙제 화면에서 다시 시도해주세요.</div>';
-}
-
-function starsHtml(n) {
-  let out = '<div class="star-row">';
-  for (let i = 0; i < 3; i++) out += `<span class="star${i < n ? ' filled' : ''}">⭐</span>`;
-  return out + '</div>';
 }
 
 // ---- 축하 컨페티(색종이) 효과 ----
@@ -283,11 +274,9 @@ function submitRecordingNow() {
         }[res.grade] || (res.retryPending ? '나중에 등급이 확인되면 표시돼요' : '등급 확인 실패');
         const scoreLine = (res.score === null || res.score === undefined) ? '' :
           '<div class="score-line">' + res.score + '점 / 100</div>';
-        const gradeStars = { 'Good': 3, 'Normal': 2, 'Practice': 1 }[res.grade];
-        const starsLine = gradeStars ? starsHtml(gradeStars) : '';
 
         resultArea.innerHTML =
-          '<div class="result">✅ 제출 완료!' + scoreLine + starsLine + '<div>' + gradeText + '</div></div>' +
+          '<div class="result">✅ 제출 완료!' + scoreLine + '<div>' + gradeText + '</div></div>' +
           '<div class="banner info">다시 녹음하거나 다음 번째 읽기를 하려면<br>이 창을 닫고 원래 화면으로 돌아가주세요.</div>' +
           '<button class="btn-close" id="closeBtn">이 창 닫고 돌아가기</button>';
 
