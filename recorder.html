@@ -198,6 +198,36 @@ backBtn.addEventListener('click', () => {
   }
 });
 
+// ---- 폰/브라우저의 "뒤로가기"를 가로채서 확인창을 띄우기 위한 트릭 ----
+// beforeunload는 안드로이드 하드웨어/제스처 뒤로가기에서는 브라우저가 그냥 무시하고
+// 바로 페이지를 떠나버리는 경우가 많아 믿을 수 없다(이번에 실제로 그랬던 경우).
+// 대신 History API로 더미 상태를 하나 쌓아두면, 뒤로가기를 눌렀을 때 곧바로 창이
+// 닫히는 대신 popstate 이벤트가 먼저 발생해서 그 시점에 직접 확인창을 띄울 수 있다.
+// (opener가 있는 정상 흐름에서만 건다 — opener가 없으면 위 history.back() 폴백 자체가
+// 유일한 이탈 수단이라 트랩을 걸면 안 됨.)
+if (window.opener) {
+  history.pushState({ recorderGuard: true }, '', location.href);
+  window.addEventListener('popstate', () => {
+    if (leavingIntentionally) return;
+    if (backBtn.classList.contains('disabled')) {
+      // 녹음 시작~제출 전: "이전 화면으로" 링크와 동일하게 뒤로가기도 막고 안내만 한다
+      alert('녹음을 시작하면 제출을 마쳐야 나갈 수 있어요.');
+      history.pushState({ recorderGuard: true }, '', location.href);
+      return;
+    }
+    const reallyLeave = confirm('녹음 화면을 나가시겠어요?');
+    if (reallyLeave) {
+      try {
+        window.opener.postMessage({ type: 'readingHwRecordingCancelled' }, '*');
+      } catch (e) {}
+      leavingIntentionally = true;
+      window.close();
+    } else {
+      history.pushState({ recorderGuard: true }, '', location.href); // 다시 트랩을 걸어둔다
+    }
+  });
+}
+
 function startRecording() {
   audioChunks = [];
   statusText.textContent = '';
