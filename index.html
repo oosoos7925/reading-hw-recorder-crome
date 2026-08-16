@@ -5,86 +5,127 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>영어 읽기 숙제</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Jua&display=swap" rel="stylesheet">
 <style>
-  :root { --blue:#2563eb; --green:#16a34a; --red:#dc2626; --gray:#6b7280; --amber:#d97706; }
+  :root {
+    --pink:#FF7EB3; --pink-dark:#E8558F;
+    --purple:#B39DFF; --purple-dark:#9270E8;
+    --mint:#4ADE9C; --mint-dark:#22B573;
+    --sky:#7DD3FC; --sky-dark:#2AA8E0;
+    --peach:#FFB86B; --peach-dark:#F0933A;
+    --coral:#FF6B6B; --coral-dark:#E24545;
+    --choco:#8B7160; --choco-light:#C4B3A6;
+    --cream:#FFFDF7;
+    --font-heading: 'Jua', 'Malgun Gothic', sans-serif;
+    --font-body: 'Gaegu', 'Malgun Gothic', sans-serif;
+  }
   * { box-sizing: border-box; }
-  body { font-family: 'Malgun Gothic', -apple-system, sans-serif; background:#f3f4f6; margin:0; padding:20px;
-         font-size:15px; }
   html, body {
     width: 100% !important;
     min-width: 100% !important;
     overflow-x: hidden;
     -webkit-text-size-adjust: 100%; /* 크롬 폰트 자동 확대/축소 방지 */
   }
-  .card { max-width:520px; margin:0 auto; background:#fff; border-radius:16px; padding:24px;
-          box-sizing: border-box;
-          box-shadow:0 2px 12px rgba(0,0,0,0.08); }
-  h1 { font-size:19px; margin:0 0 14px; color:#111827; }
-  input[type=text] { width:100%; padding:13px; font-size:16px; border-radius:10px; border:1px solid #d1d5db; }
+  body { font-family: var(--font-body); background:linear-gradient(180deg, #FDF4FF 0%, #F0FBFF 100%);
+         background-attachment:fixed; margin:0; padding:20px; font-size:16px; color:var(--choco); }
+
+  @keyframes popIn {
+    0% { opacity:0; transform: translateY(16px) scale(0.94); }
+    60% { opacity:1; transform: translateY(-4px) scale(1.02); }
+    100% { opacity:1; transform: translateY(0) scale(1); }
+  }
+  @keyframes confettiFall {
+    0% { transform: translateY(0) rotate(0deg); opacity:0.95; }
+    100% { transform: translateY(110vh) rotate(360deg); opacity:0; }
+  }
+
+  .card { position:relative; max-width:520px; margin:0 auto; background:var(--cream); border-radius:24px; padding:26px 24px;
+          box-sizing: border-box; border:3px solid #FFE1EE;
+          box-shadow:0 10px 24px rgba(255,126,179,0.18), 0 2px 6px rgba(139,113,96,0.08); }
+  .card.pop-in { animation: popIn 0.45s cubic-bezier(.34,1.56,.64,1); }
+  #loginCard::before { content:'⭐'; position:absolute; top:-16px; left:24px; font-size:30px; transform:rotate(-12deg); }
+  #homeworkCard::before { content:'🎈'; position:absolute; top:-18px; right:24px; font-size:32px; transform:rotate(10deg); }
+
+  h1 { font-family: var(--font-heading); font-weight:400; font-size:22px; margin:0 0 14px; color:var(--purple-dark); }
+  input[type=text] { width:100%; padding:13px 16px; font-size:16px; font-family:var(--font-body); border-radius:14px;
+                      border:2px solid #F3D9E8; background:#fff; }
+  input[type=text]:focus { outline:none; border-color:var(--pink); box-shadow:0 0 0 4px rgba(255,126,179,0.18); }
   .row-flex { display:flex; gap:8px; margin-top:10px; }
   .row-flex input { flex:1; }
-  button.primary { background:var(--blue); color:#fff; border:none; border-radius:10px; padding:14px 18px;
-                    font-size:16px; font-weight:700; cursor:pointer; white-space:nowrap; min-height:48px; }
-  button.primary:disabled { background:#9ca3af; cursor:not-allowed; }
+
+  button { font-family: var(--font-heading); transition: transform .08s ease, box-shadow .08s ease, opacity .15s ease; }
+  button.primary { background:var(--pink); color:#fff; border:none; border-radius:999px; padding:14px 18px;
+                    font-size:17px; font-weight:400; cursor:pointer; white-space:nowrap; min-height:48px;
+                    box-shadow:0 4px 0 var(--pink-dark); }
+  button.primary:active:not(:disabled) { transform:translateY(4px); box-shadow:0 0 0 var(--pink-dark); }
+  button.primary:disabled { background:#E5DAD2; color:#fff; box-shadow:none; cursor:not-allowed; }
   .radio-list { margin-top:12px; }
-  .radio-item { display:flex; align-items:center; gap:8px; padding:12px; border:1px solid #e5e7eb;
-                border-radius:10px; margin-top:6px; cursor:pointer; font-size:15px; }
+  .radio-item { display:flex; align-items:center; gap:8px; padding:13px; border:2px solid #F3D9E8;
+                border-radius:14px; margin-top:8px; cursor:pointer; font-size:15px; background:#fff; }
   .radio-item input { width:auto; }
-  .msg { margin-top:14px; padding:12px 14px; border-radius:10px; font-size:14px; }
-  .msg.error { background:#fef2f2; color:var(--red); }
-  .msg.info { background:#eff6ff; color:#1d4ed8; }
+  .msg { margin-top:14px; padding:12px 14px; border-radius:14px; font-size:14px; }
+  .msg.error { background:#FFE9E9; color:var(--coral-dark); }
+  .msg.info { background:#E9F7FF; color:var(--sky-dark); }
 
   .header-info { display:flex; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap; }
-  .class-badge { background:var(--blue); color:#fff; font-size:13px; font-weight:700;
-                  padding:5px 12px; border-radius:999px; white-space:nowrap; }
-  .student-name-big { font-size:22px; font-weight:800; color:#111827; }
-  .history-link { text-align:right; font-size:13px; color:var(--blue); cursor:pointer;
-                   margin-bottom:6px; text-decoration:underline; }
+  .class-badge { background:var(--purple); color:#fff; font-size:13px; font-weight:700; font-family:var(--font-heading);
+                  padding:6px 14px; border-radius:999px; white-space:nowrap; }
+  .student-name-big { font-family: var(--font-heading); font-size:23px; color:var(--choco); }
+  .history-link { text-align:right; font-size:13px; color:var(--sky-dark); cursor:pointer;
+                   margin-bottom:6px; font-weight:700; }
 
-  .retry-banner { background:#fff7ed; color:var(--amber); border:1.5px solid #fed7aa; border-radius:10px;
+  .retry-banner { background:#FFF1DE; color:var(--peach-dark); border:2px solid #FFDBA8; border-radius:14px;
                    padding:10px 14px; font-weight:700; font-size:14px; margin:18px 0 10px; }
 
-  .script-box { background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px; padding:16px;
-                margin-top:10px; font-size:17px; line-height:1.85; color:#111827; white-space:pre-wrap; }
-  .hint { font-size:12px; color:var(--gray); margin-top:14px; text-align:center; }
+  .script-box { background:#FFF8EF; border:2px dashed #F3D9E8; border-radius:16px; padding:16px;
+                margin-top:10px; font-size:18px; line-height:1.9; color:var(--choco); white-space:pre-wrap; }
+  .hint { font-size:12px; color:var(--choco-light); margin-top:14px; text-align:center; }
 
-  .info-box { background:#eff6ff; border-radius:12px; padding:12px 14px; margin:14px 0; }
-  .info-line { display:flex; align-items:flex-start; gap:8px; font-size:13px; color:#1d4ed8; line-height:1.6; }
+  .info-box { background:#E9F7FF; border-radius:16px; padding:12px 14px; margin:14px 0; }
+  .info-line { display:flex; align-items:flex-start; gap:8px; font-size:13px; color:var(--sky-dark); line-height:1.6; }
   .info-line + .info-line { margin-top:8px; }
   .info-icon { flex-shrink:0; font-size:15px; }
 
-  .attempt { padding:14px; border:1px solid #e5e7eb; border-radius:12px; margin-top:10px; }
-  .attempt.locked { background:#f9fafb; opacity:0.6; }
+  .attempt { position:relative; padding:14px; border:2px solid #F3D9E8; border-radius:16px; margin-top:12px; background:#fff; }
+  .attempt.locked { background:#F7F3EE; border-color:#EBE2D8; opacity:0.65; }
   .attempt-top { display:flex; align-items:center; justify-content:space-between; gap:10px; }
   .attempt-actions { display:flex; align-items:center; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
-  .attempt-label { font-weight:700; font-size:15px; }
-  .status-txt { font-size:13px; color:var(--gray); margin-top:6px; line-height:1.5; }
-  button.btn-go { background:var(--blue); color:#fff; border:none; border-radius:10px;
-                   padding:10px 16px; font-size:13px; font-weight:700; cursor:pointer; min-height:40px; }
-  button.btn-locked { background:#e5e7eb; color:#9ca3af; border:none; border-radius:10px;
-                       padding:10px 16px; font-size:13px; font-weight:700; cursor:not-allowed; }
-  button.btn-redo { background:#f3f4f6; color:#374151; border:1px solid #d1d5db; border-radius:10px;
-                     padding:7px 12px; font-size:12px; cursor:pointer; }
-  button.btn-play { background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; border-radius:10px;
-                     padding:7px 12px; font-size:12px; font-weight:700; cursor:pointer; }
+  .attempt-label { font-family:var(--font-heading); font-size:16px; color:var(--purple-dark); }
+  .status-txt { font-size:13px; color:var(--choco); margin-top:6px; line-height:1.5; }
+  .star-row { margin-top:4px; }
+  .star { font-size:15px; opacity:0.25; filter:grayscale(1); margin-right:1px; }
+  .star.filled { opacity:1; filter:none; }
+  button.btn-go { background:var(--mint); color:#fff; border:none; border-radius:999px;
+                   padding:10px 16px; font-size:13px; font-weight:400; cursor:pointer; min-height:40px;
+                   box-shadow:0 3px 0 var(--mint-dark); }
+  button.btn-go:active { transform:translateY(3px); box-shadow:0 0 0 var(--mint-dark); }
+  button.btn-locked { background:#EBE2D8; color:#B5A395; border:none; border-radius:999px;
+                       padding:10px 16px; font-size:13px; font-weight:400; cursor:not-allowed; }
+  button.btn-redo { background:#fff; color:var(--purple-dark); border:2px solid #E3D6FF; border-radius:999px;
+                     padding:7px 14px; font-size:12px; cursor:pointer; }
+  button.btn-play { background:#E9F7FF; color:var(--sky-dark); border:2px solid #C7ECFF; border-radius:999px;
+                     padding:7px 14px; font-size:12px; font-weight:700; cursor:pointer; }
   .audio-holder { margin-top:8px; }
   .audio-holder audio { width:100%; display:block; }
-  .waiting-banner { margin-top:16px; padding:12px 14px; border-radius:10px; font-size:14px;
-                     text-align:center; background:#eff6ff; color:#1d4ed8; }
-  .done-banner { margin-top:16px; padding:16px 14px; border-radius:12px; font-size:16px; font-weight:800;
-                  text-align:center; background:#f0fdf4; color:#15803d; }
+  .waiting-banner { margin-top:16px; padding:12px 14px; border-radius:14px; font-size:14px;
+                     text-align:center; background:#E9F7FF; color:var(--sky-dark); }
+  .done-banner { margin-top:16px; padding:18px 14px; border-radius:18px; font-size:17px; font-family:var(--font-heading);
+                  text-align:center; background:#E7FBF1; color:var(--mint-dark); border:2px solid #BEF2D8; }
 
-  .history-item { border:1px solid #e5e7eb; border-radius:12px; padding:12px 14px; margin-top:10px; }
-  .history-item h3 { margin:0 0 6px; font-size:15px; color:#111827; }
-  .history-attempt { font-size:13px; color:#374151; padding:4px 0; border-top:1px dashed #e5e7eb; }
+  .history-item { border:2px solid #F3D9E8; border-radius:16px; padding:12px 14px; margin-top:10px; background:#fff; }
+  .history-item h3 { font-family:var(--font-heading); margin:0 0 6px; font-size:15px; color:var(--purple-dark); font-weight:400; }
+  .history-attempt { font-size:13px; color:var(--choco); padding:5px 0; border-top:1px dashed #F3D9E8; }
   .history-attempt:first-child { border-top:none; }
-  button.btn-gray-full { background:#f3f4f6; color:#374151; border:1px solid #d1d5db; border-radius:10px;
+  button.btn-gray-full { background:#fff; color:var(--choco); border:2px solid #F3D9E8; border-radius:999px;
                           padding:12px 16px; font-size:14px; width:100%; margin-top:16px; cursor:pointer; }
 
-  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(17,24,39,0.5); z-index:1000;
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(139,113,96,0.35); z-index:1000;
                     align-items:center; justify-content:center; padding:20px; }
   .modal-overlay.open { display:flex; }
   .modal-overlay .card { width:100%; }
+  .modal-overlay.open .card { animation: popIn 0.4s cubic-bezier(.34,1.56,.64,1); }
 </style>
 </head>
 <body>
@@ -185,15 +226,52 @@ function callApi(action, payload) {
 }
 
 let currentStudentId = '', currentStudentName = '', currentClassId = '', currentClassName = '';
+let hasCelebrated = false; // 이번 로그인 동안 완료 축하 효과를 이미 보여줬는지
 
 const gradeInfo = {
-  'Good':     { icon: '😃', text: '참 잘 읽었어요' },
-  'Normal':   { icon: '🙂', text: '잘 읽었어요' },
-  'Practice': { icon: '🤔', text: '다시 한번 읽어볼까요' }
+  'Good':     { icon: '😃', text: '참 잘 읽었어요', stars: 3 },
+  'Normal':   { icon: '🙂', text: '잘 읽었어요', stars: 2 },
+  'Practice': { icon: '🤔', text: '다시 한번 읽어볼까요', stars: 1 }
 };
 const numIcon = { 1: '1️⃣', 2: '2️⃣', 3: '3️⃣' };
 function scoreLabel(a) {
   return (a.score === null || a.score === undefined) ? '' : (a.score + '점 · ');
+}
+function starsHtml(n) {
+  let out = '<div class="star-row">';
+  for (let i = 0; i < 3; i++) out += `<span class="star${i < n ? ' filled' : ''}">⭐</span>`;
+  return out + '</div>';
+}
+
+// ---- 축하 컨페티(색종이) 효과 ----
+function launchConfetti() {
+  const colors = ['#FF7EB3', '#B39DFF', '#4ADE9C', '#7DD3FC', '#FFB86B'];
+  const container = document.createElement('div');
+  container.style.cssText = 'position:fixed; inset:0; pointer-events:none; z-index:2000; overflow:hidden;';
+  document.body.appendChild(container);
+  for (let i = 0; i < 60; i++) {
+    const piece = document.createElement('div');
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    const size = 6 + Math.random() * 6;
+    const left = Math.random() * 100;
+    const duration = 1.8 + Math.random() * 1.4;
+    const delay = Math.random() * 0.4;
+    const rotate = Math.random() * 360;
+    const shape = Math.random() > 0.5 ? '50%' : '3px';
+    piece.style.cssText = `position:absolute; top:-20px; left:${left}%; width:${size}px; height:${size}px;
+      background:${color}; border-radius:${shape};
+      animation: confettiFall ${duration}s ease-in ${delay}s forwards; transform:rotate(${rotate}deg);`;
+    container.appendChild(piece);
+  }
+  setTimeout(() => container.remove(), 3600);
+}
+
+// 화면(카드)을 보여줄 때 통통 튀는 등장 애니메이션을 매번 새로 재생
+function showCard(el) {
+  el.style.display = 'block';
+  el.classList.remove('pop-in');
+  void el.offsetWidth; // reflow로 애니메이션 재시작
+  el.classList.add('pop-in');
 }
 
 function setBtnBusy(btn, busyText) {
@@ -370,7 +448,8 @@ function enterHomework(studentId, studentName, classId, passwordEnabled) {
       resetBtn(confirmClassBtn);
       resetBtn(confirmPasswordBtn);
       document.getElementById('loginCard').style.display = 'none';
-      document.getElementById('homeworkCard').style.display = 'block';
+      showCard(document.getElementById('homeworkCard'));
+      hasCelebrated = false;
       document.getElementById('classBadge').textContent = res.className;
       document.getElementById('studentNameBig').textContent = currentStudentName;
       applyHomeworkData(res);
@@ -417,11 +496,15 @@ function applyHomeworkData(res) {
     const allAttempts = res.attempts.concat(res.retryAssignment ? res.retryAssignment.attempts : []);
     const hasPractice = allAttempts.some(a => a.grade === 'Practice');
     const bannerHtml = hasPractice
-      ? '<div class="done-banner" style="margin-top:20px; background:#fff7ed; color:#d97706;">💪 연습해서 다시 한번 녹음해봐요!</div>'
+      ? '<div class="done-banner" style="margin-top:20px; background:#FFF1DE; color:var(--peach-dark); border-color:#FFDBA8;">💪 연습해서 다시 한번 녹음해봐요!</div>'
       : '<div class="done-banner" style="margin-top:20px;">🎉 오늘 숙제를 모두 마쳤어요! 수고했어요.</div>';
     allDoneArea.innerHTML = bannerHtml +
       '<button class="primary" id="goToLoginBtn" style="width:100%; margin-top:12px;">🏠 처음 화면으로 이동</button>';
     document.getElementById('goToLoginBtn').addEventListener('click', goToLoginScreen);
+    if (!hasPractice && !hasCelebrated) {
+      hasCelebrated = true;
+      launchConfetti();
+    }
   } else {
     allDoneArea.innerHTML = '';
   }
@@ -430,7 +513,7 @@ function applyHomeworkData(res) {
 function goToLoginScreen() {
   document.getElementById('homeworkCard').style.display = 'none';
   document.getElementById('historyCard').style.display = 'none';
-  document.getElementById('loginCard').style.display = 'block';
+  showCard(document.getElementById('loginCard'));
   document.getElementById('nameInput').value = '';
   document.getElementById('loginMsg').innerHTML = '';
   document.getElementById('classChoiceArea').style.display = 'none';
@@ -439,6 +522,7 @@ function goToLoginScreen() {
   resetBtn(confirmClassBtn);
   resetBtn(confirmPasswordBtn);
   pendingLogin = null;
+  hasCelebrated = false;
   currentStudentId = ''; currentStudentName = ''; currentClassId = ''; currentClassName = '';
 }
 
@@ -476,7 +560,8 @@ function renderAttemptsInto(containerId, attempts, isRetry) {
       }
     } else if (info.grade && gradeInfo[info.grade]) {
       statusHtml = `✅ 제출 완료! ${scoreLabel(info)}${gradeInfo[info.grade].icon} ${gradeInfo[info.grade].text}` +
-                   (info.comment ? `<br>💬 선생님: ${info.comment}` : '');
+                   starsHtml(gradeInfo[info.grade].stars) +
+                   (info.comment ? `💬 선생님: ${info.comment}` : '');
       redoBtnHtml = `<button class="btn-redo" onclick="openRecorder(this, ${n}, ${isRetry})">🔄 다시 녹음하러 가기</button>`;
     } else if (info.retryPending) {
       statusHtml = '✅ 제출 완료! 나중에 등급이 확인되면 표시돼요 (제출은 잘 완료됐어요)';
@@ -584,7 +669,7 @@ function reloadHomework() {
 // ---- 지난 숙제 기록 ----
 document.getElementById('historyLinkBtn').addEventListener('click', () => {
   document.getElementById('homeworkCard').style.display = 'none';
-  document.getElementById('historyCard').style.display = 'block';
+  showCard(document.getElementById('historyCard'));
   document.getElementById('historyList').innerHTML = '<p class="hint">불러오는 중...</p>';
   callApi('getStudentHistory', { studentId: currentStudentId }).then(res => renderHistory(res.list || []));
 });
@@ -634,7 +719,7 @@ pwModalConfirmBtn.addEventListener('click', () => {
         pwModalFields.style.display = 'none';
         pwModalConfirmBtn.style.display = 'none';
         pwModalCancelBtn.textContent = '닫기';
-        pwModalMsg.innerHTML = '<div class="msg info" style="color:var(--green); background:#f0fdf4;">✅ 암호가 변경됐어요!</div>';
+        pwModalMsg.innerHTML = '<div class="msg info" style="color:var(--mint-dark); background:#E7FBF1;">✅ 암호가 변경됐어요!</div>';
       } else {
         pwModalMsg.innerHTML = '<div class="msg error">' + (res.message || '암호 변경에 실패했어요.') + '</div>';
       }
@@ -649,7 +734,7 @@ pwModalConfirm.addEventListener('keydown', (e) => { if (e.key === 'Enter') pwMod
 
 document.getElementById('backFromHistoryBtn').addEventListener('click', () => {
   document.getElementById('historyCard').style.display = 'none';
-  document.getElementById('homeworkCard').style.display = 'block';
+  showCard(document.getElementById('homeworkCard'));
 });
 
 function renderHistory(list) {
@@ -665,7 +750,7 @@ function renderHistory(list) {
     let attemptsHtml = '';
     asg.attempts.forEach(a => {
       const gradeText = a.grade && gradeInfo[a.grade]
-        ? `${scoreLabel(a)}${gradeInfo[a.grade].icon} ${gradeInfo[a.grade].text}`
+        ? `${scoreLabel(a)}${gradeInfo[a.grade].icon} ${gradeInfo[a.grade].text}` + (a.grade ? starsHtml(gradeInfo[a.grade].stars) : '')
         : (a.retryPending ? '분석 대기 중' : '등급 확인 실패');
       attemptsHtml += `<div class="history-attempt">${a.attempt}번째 읽기 (${a.timestamp}) - ${gradeText}` +
         (a.comment ? `<br>💬 선생님: ${a.comment}` : '') + `</div>`;

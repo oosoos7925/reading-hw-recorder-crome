@@ -5,34 +5,70 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>녹음하기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Jua&display=swap" rel="stylesheet">
 <style>
-  :root { --blue:#2563eb; --green:#16a34a; --red:#dc2626; --gray:#6b7280; }
+  :root {
+    --pink:#FF7EB3; --pink-dark:#E8558F;
+    --purple:#B39DFF; --purple-dark:#9270E8;
+    --mint:#4ADE9C; --mint-dark:#22B573;
+    --sky:#7DD3FC; --sky-dark:#2AA8E0;
+    --peach:#FFB86B; --peach-dark:#F0933A;
+    --coral:#FF6B6B; --coral-dark:#E24545;
+    --choco:#8B7160; --choco-light:#C4B3A6;
+    --cream:#FFFDF7;
+    --font-heading: 'Jua', 'Malgun Gothic', sans-serif;
+    --font-body: 'Gaegu', 'Malgun Gothic', sans-serif;
+  }
   * { box-sizing: border-box; }
-  body { font-family: 'Malgun Gothic', -apple-system, sans-serif; background:#f3f4f6; margin:0; padding:20px; }
-  .card { max-width:480px; margin:0 auto; background:#fff; border-radius:14px; padding:24px;
-          box-shadow:0 2px 10px rgba(0,0,0,0.08); }
+  body { font-family: var(--font-body); background:linear-gradient(180deg, #FDF4FF 0%, #F0FBFF 100%);
+         background-attachment:fixed; margin:0; padding:20px; color:var(--choco); }
+
+  @keyframes popIn {
+    0% { opacity:0; transform: translateY(16px) scale(0.94); }
+    60% { opacity:1; transform: translateY(-4px) scale(1.02); }
+    100% { opacity:1; transform: translateY(0) scale(1); }
+  }
+  @keyframes confettiFall {
+    0% { transform: translateY(0) rotate(0deg); opacity:0.95; }
+    100% { transform: translateY(110vh) rotate(360deg); opacity:0; }
+  }
+
+  .card { position:relative; max-width:480px; margin:0 auto; background:var(--cream); border-radius:24px; padding:26px 24px;
+          border:3px solid #FFE1EE;
+          box-shadow:0 10px 24px rgba(255,126,179,0.18), 0 2px 6px rgba(139,113,96,0.08);
+          animation: popIn 0.45s cubic-bezier(.34,1.56,.64,1); }
+  .card::before { content:'🎙️'; position:absolute; top:-18px; left:24px; font-size:30px; transform:rotate(-10deg); }
+
   .header-info { display:flex; align-items:center; gap:8px; margin-bottom:4px; flex-wrap:wrap; }
-  .class-badge { background:var(--blue); color:#fff; font-size:12px; font-weight:700;
-                  padding:4px 10px; border-radius:999px; }
-  .student-name-big { font-size:19px; font-weight:800; color:#111827; }
-  h1 { font-size:16px; margin:4px 0 12px; color:#374151; font-weight:600; }
-  .script-box { background:#f9fafb; border:1px solid #e5e7eb; border-radius:10px; padding:16px;
-                margin-bottom:16px; font-size:16px; line-height:1.7; color:#111827; white-space:pre-wrap; }
-  .hint { font-size:12px; color:var(--gray); margin-top:10px; text-align:center; }
-  button { border:none; border-radius:10px; padding:14px; font-size:16px; font-weight:700; cursor:pointer;
-           width:100%; }
-  .btn-record { background:var(--blue); color:#fff; }
-  .btn-stop { background:var(--red); color:#fff; }
-  .btn-submit { background:var(--green); color:#fff; margin-top:8px; }
-  .btn-redo2 { background:#f3f4f6; color:#374151; border:1px solid #d1d5db; margin-top:8px; }
-  .btn-close { background:#f3f4f6; color:#374151; border:1px solid #d1d5db; margin-top:10px; }
+  .class-badge { background:var(--purple); color:#fff; font-size:12px; font-weight:700; font-family:var(--font-heading);
+                  padding:5px 12px; border-radius:999px; }
+  .student-name-big { font-size:19px; font-family:var(--font-heading); color:var(--choco); }
+  h1 { font-size:17px; margin:6px 0 12px; color:var(--purple-dark); font-family:var(--font-heading); font-weight:400; }
+  .script-box { background:#FFF8EF; border:2px dashed #F3D9E8; border-radius:16px; padding:16px;
+                margin-bottom:16px; font-size:17px; line-height:1.8; color:var(--choco); white-space:pre-wrap; }
+  .hint { font-size:12px; color:var(--choco-light); margin-top:10px; text-align:center; }
+  button { font-family: var(--font-heading); border:none; border-radius:999px; padding:14px; font-size:17px;
+           font-weight:400; cursor:pointer; width:100%; transition: transform .08s ease, box-shadow .08s ease, opacity .15s ease; }
+  .btn-record { background:var(--mint); color:#fff; box-shadow:0 4px 0 var(--mint-dark); }
+  .btn-record:active { transform:translateY(4px); box-shadow:0 0 0 var(--mint-dark); }
+  .btn-stop { background:var(--coral); color:#fff; box-shadow:0 4px 0 var(--coral-dark); }
+  .btn-stop:active { transform:translateY(4px); box-shadow:0 0 0 var(--coral-dark); }
+  .btn-submit { background:var(--pink); color:#fff; margin-top:8px; box-shadow:0 4px 0 var(--pink-dark); }
+  .btn-submit:active { transform:translateY(4px); box-shadow:0 0 0 var(--pink-dark); }
+  .btn-redo2 { background:#fff; color:var(--purple-dark); border:2px solid #E3D6FF; margin-top:8px; }
+  .btn-close { background:#fff; color:var(--choco); border:2px solid #F3D9E8; margin-top:10px; }
   .status { text-align:center; font-size:15px; margin-top:14px; min-height:24px; }
-  .timer { font-variant-numeric: tabular-nums; color:var(--gray); font-size:14px; text-align:center; margin-top:6px; }
-  .banner { padding:10px 12px; border-radius:8px; font-size:13px; margin-bottom:14px; }
-  .banner.error { background:#fef2f2; color:var(--red); }
-  .banner.info { background:#eff6ff; color:#1d4ed8; margin-top:12px; text-align:center; font-weight:600; }
-  .result { text-align:center; margin-top:18px; font-size:17px; font-weight:700; }
-  .score-line { font-size:22px; color:var(--blue); margin:6px 0 2px; }
+  .timer { font-variant-numeric: tabular-nums; color:var(--choco-light); font-size:14px; text-align:center; margin-top:6px; }
+  .banner { padding:10px 12px; border-radius:14px; font-size:13px; margin-bottom:14px; }
+  .banner.error { background:#FFE9E9; color:var(--coral-dark); }
+  .banner.info { background:#E9F7FF; color:var(--sky-dark); margin-top:12px; text-align:center; font-weight:700; }
+  .result { text-align:center; margin-top:18px; font-size:18px; font-family:var(--font-heading); }
+  .score-line { font-size:24px; color:var(--pink-dark); margin:6px 0 2px; font-family:var(--font-heading); }
+  .star-row { margin:6px 0 2px; }
+  .star { font-size:20px; opacity:0.25; filter:grayscale(1); margin:0 1px; }
+  .star.filled { opacity:1; filter:none; }
   audio { width:100%; margin-top:14px; }
 </style>
 </head>
@@ -83,6 +119,35 @@ document.getElementById('scriptText').textContent = ctx.script;
 if (!ctx.studentId || !ctx.assignmentId || !ctx.script) {
   document.getElementById('controls').innerHTML =
     '<div class="banner error">필요한 정보가 없어요. 원래 숙제 화면에서 다시 시도해주세요.</div>';
+}
+
+function starsHtml(n) {
+  let out = '<div class="star-row">';
+  for (let i = 0; i < 3; i++) out += `<span class="star${i < n ? ' filled' : ''}">⭐</span>`;
+  return out + '</div>';
+}
+
+// ---- 축하 컨페티(색종이) 효과 ----
+function launchConfetti() {
+  const colors = ['#FF7EB3', '#B39DFF', '#4ADE9C', '#7DD3FC', '#FFB86B'];
+  const container = document.createElement('div');
+  container.style.cssText = 'position:fixed; inset:0; pointer-events:none; z-index:2000; overflow:hidden;';
+  document.body.appendChild(container);
+  for (let i = 0; i < 60; i++) {
+    const piece = document.createElement('div');
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    const size = 6 + Math.random() * 6;
+    const left = Math.random() * 100;
+    const duration = 1.8 + Math.random() * 1.4;
+    const delay = Math.random() * 0.4;
+    const rotate = Math.random() * 360;
+    const shape = Math.random() > 0.5 ? '50%' : '3px';
+    piece.style.cssText = `position:absolute; top:-20px; left:${left}%; width:${size}px; height:${size}px;
+      background:${color}; border-radius:${shape};
+      animation: confettiFall ${duration}s ease-in ${delay}s forwards; transform:rotate(${rotate}deg);`;
+    container.appendChild(piece);
+  }
+  setTimeout(() => container.remove(), 3600);
 }
 
 let mediaRecorder, audioChunks = [];
@@ -221,12 +286,15 @@ function submitRecordingNow() {
         }[res.grade] || (res.retryPending ? '나중에 등급이 확인되면 표시돼요' : '등급 확인 실패');
         const scoreLine = (res.score === null || res.score === undefined) ? '' :
           '<div class="score-line">' + res.score + '점 / 100</div>';
+        const gradeStars = { 'Good': 3, 'Normal': 2, 'Practice': 1 }[res.grade];
+        const starsLine = gradeStars ? starsHtml(gradeStars) : '';
 
         resultArea.innerHTML =
-          '<div class="result">✅ 제출 완료!' + scoreLine + '<div>' + gradeText + '</div></div>' +
+          '<div class="result">✅ 제출 완료!' + scoreLine + starsLine + '<div>' + gradeText + '</div></div>' +
           '<div class="banner info">다시 녹음하거나 다음 번째 읽기를 하려면<br>이 창을 닫고 원래 화면으로 돌아가주세요.</div>' +
           '<button class="btn-close" id="closeBtn">이 창 닫고 돌아가기</button>';
 
+        if (res.grade === 'Good') launchConfetti();
         notifyOpenerAndMaybeClose();
       })
       .catch(() => {
