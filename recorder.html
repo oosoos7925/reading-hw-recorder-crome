@@ -146,20 +146,24 @@ let mediaRecorder, audioChunks = [];
 let recordingTimer = null, autoStopTimer = null, recordSeconds = 0;
 let isRecordingNow = false;
 let recordedBlob = null;
-let hasNotifiedOpener = false; // 완료/취소 신호를 이미 보냈는지 (중복 전송 방지용)
+// 이 페이지의 버튼(이전 화면으로/제출 후 닫기/다시 시도) 중 하나를 눌러서 "의도적으로" 나가는
+// 경우엔 true로 바뀐다. false인 채로 페이지를 벗어나려 하면(=폰 뒤로가기, 스와이프, 탭 닫기 등
+// 실수로 눌렸을 수 있는 경우) 아래 beforeunload가 브라우저 기본 확인창을 띄운다.
+let leavingIntentionally = false;
 
 window.addEventListener('beforeunload', (e) => {
-  if (isRecordingNow) {
+  if (!leavingIntentionally) {
     e.preventDefault();
-    e.returnValue = '';
+    e.returnValue = ''; // 최신 브라우저는 이 메시지를 무시하고 자체 문구("정말 나가시겠습니까?" 등)를 보여준다.
   }
 });
 
 // ---- 안전망: "이전 화면으로" 링크를 안 누르고 폰/브라우저 자체 뒤로가기나 스와이프로
 // 이 창을 나가는 경우에도, 숙제 화면의 "다시 녹음하러 가기" 버튼이 계속 눌린 채로
 // 남지 않도록 페이지가 실제로 사라지기 직전(pagehide)에 한 번 더 신호를 보낸다.
+// (위 beforeunload 확인창에서 "머무르기"를 선택하면 pagehide 자체가 발생하지 않으므로 안전함.)
 window.addEventListener('pagehide', () => {
-  if (hasNotifiedOpener) return; // 이미 완료/취소 신호를 보냈으면 중복 전송 안 함
+  if (leavingIntentionally) return; // 이미 완료/취소 신호를 보냈거나 페이지 내 재시도(reload)면 중복 전송 안 함
   try {
     if (window.opener) window.opener.postMessage({ type: 'readingHwRecordingCancelled' }, '*');
   } catch (e) {}
@@ -186,7 +190,7 @@ backBtn.addEventListener('click', () => {
   try {
     if (window.opener) window.opener.postMessage({ type: 'readingHwRecordingCancelled' }, '*');
   } catch (e) {}
-  hasNotifiedOpener = true;
+  leavingIntentionally = true;
   if (window.opener) {
     window.close();
   } else {
@@ -240,6 +244,14 @@ function startRecording() {
   });
 }
 
+// 실패/문제 상황에서 "다시 녹음하기"로 이 페이지 자체를 새로고침할 때 쓴다.
+// 페이지를 벗어나는 게 아니라 같은 화면을 다시 시작하는 것뿐이라, beforeunload
+// 확인창이나 pagehide의 "취소" 신호가 뜨지 않도록 미리 leavingIntentionally를 켠다.
+function retryReload() {
+  leavingIntentionally = true;
+  location.reload();
+}
+
 function stopRecording() {
   clearInterval(recordingTimer);
   clearTimeout(autoStopTimer);
@@ -252,7 +264,7 @@ function showReviewStep() {
 
   if (recordedBlob.size < 2000) {
     statusText.innerHTML = '<div class="banner error">녹음에 문제가 있어요. 다시 녹음해주세요.</div>';
-    controls.innerHTML = '<button class="btn-record" onclick="location.reload()">다시 녹음하기</button>';
+    controls.innerHTML = '<button class="btn-record" onclick="retryReload()">다시 녹음하기</button>';
     return;
   }
 
@@ -303,7 +315,7 @@ function submitRecordingNow() {
         statusText.textContent = '';
         if (!res.success) {
           resultArea.innerHTML = '<div class="banner error">' + res.message + '</div>' +
-            '<button class="btn-record" onclick="location.reload()">다시 녹음하기</button>';
+            '<button class="btn-record" onclick="retryReload()">다시 녹음하기</button>';
           return;
         }
         const gradeText = {
@@ -326,7 +338,7 @@ function submitRecordingNow() {
       .catch(() => {
         statusText.textContent = '';
         resultArea.innerHTML = '<div class="banner error">업로드에 실패했어요. 인터넷 연결을 확인하고 다시 시도해주세요.</div>' +
-          '<button class="btn-record" onclick="location.reload()">다시 녹음하기</button>';
+          '<button class="btn-record" onclick="retryReload()">다시 녹음하기</button>';
       });
   };
   reader.readAsDataURL(recordedBlob);
@@ -338,7 +350,7 @@ function notifyOpenerAndMaybeClose() {
       window.opener.postMessage({ type: 'readingHwRecordingComplete' }, '*');
     }
   } catch (e) {}
-  hasNotifiedOpener = true;
+  leavingIntentionally = true;
 
   const closeBtn = document.getElementById('closeBtn');
   if (closeBtn) {
