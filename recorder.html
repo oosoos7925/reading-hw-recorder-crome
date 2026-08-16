@@ -7,67 +7,62 @@
 <title>녹음하기</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&family=Baloo+2:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@400;500;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --pink:#FF7EB3; --pink-dark:#E8558F;
-    --purple:#B39DFF; --purple-dark:#9270E8;
-    --mint:#4ADE9C; --mint-dark:#22B573;
-    --sky:#7DD3FC; --sky-dark:#2AA8E0;
-    --peach:#FFB86B; --peach-dark:#F0933A;
-    --coral:#FF6B6B; --coral-dark:#E24545;
-    --choco:#8B7160; --choco-light:#C4B3A6;
-    --cream:#FFFDF7;
-    --font-heading: 'Jua', 'Malgun Gothic', sans-serif;
-    --font-body: 'Gowun Dodum', 'Malgun Gothic', sans-serif;
-    --font-script: 'Baloo 2', 'Gowun Dodum', 'Malgun Gothic', sans-serif; /* 영어 읽기 대본 전용: 또렷한 글자 구분이 중요 */
+    --primary:#4C6FFF; --primary-dark:#3853D6;
+    --teal:#14B8A6; --teal-dark:#0E9488;
+    --amber:#F59E0B; --amber-dark:#C9790A;
+    --red:#EF4444; --red-dark:#DC2626;
+    --ink:#2E3440; --ink-light:#6B7280;
+    --line:#E3E6ED;
+    --surface:#FFFFFF;
+    --bg:#F4F6FA;
+    --font: 'Gothic A1', 'Malgun Gothic', sans-serif;
   }
   * { box-sizing: border-box; }
-  body { font-family: var(--font-body); background:linear-gradient(180deg, #FDF4FF 0%, #F0FBFF 100%);
-         background-attachment:fixed; margin:0; padding:20px; color:var(--choco); }
+  body { font-family: var(--font); background:var(--bg); margin:0; padding:20px; color:var(--ink); }
 
   @keyframes popIn {
-    0% { opacity:0; transform: translateY(16px) scale(0.94); }
-    60% { opacity:1; transform: translateY(-4px) scale(1.02); }
-    100% { opacity:1; transform: translateY(0) scale(1); }
+    0% { opacity:0; transform: translateY(10px); }
+    100% { opacity:1; transform: translateY(0); }
   }
   @keyframes confettiFall {
-    0% { transform: translateY(0) rotate(0deg); opacity:0.95; }
+    0% { transform: translateY(0) rotate(0deg); opacity:0.9; }
     100% { transform: translateY(110vh) rotate(360deg); opacity:0; }
   }
 
-  .card { position:relative; max-width:480px; margin:0 auto; background:var(--cream); border-radius:24px; padding:26px 24px;
-          border:3px solid #FFE1EE;
-          box-shadow:0 10px 24px rgba(255,126,179,0.18), 0 2px 6px rgba(139,113,96,0.08);
-          animation: popIn 0.45s cubic-bezier(.34,1.56,.64,1); }
-  .card::before { content:'🎙️'; position:absolute; top:-18px; left:24px; font-size:30px; transform:rotate(-10deg); }
+  .card { position:relative; max-width:480px; margin:0 auto; background:var(--surface); border-radius:16px; padding:24px;
+          border:1px solid var(--line);
+          box-shadow:0 4px 14px rgba(20,24,40,0.06);
+          animation: popIn 0.3s ease-out; }
 
   .header-info { display:flex; align-items:center; gap:8px; margin-bottom:4px; flex-wrap:wrap; }
-  .class-badge { background:var(--purple); color:#fff; font-size:12px; font-weight:700; font-family:var(--font-heading);
+  .class-badge { background:var(--primary); color:#fff; font-size:12px; font-weight:700;
                   padding:5px 12px; border-radius:999px; }
-  .student-name-big { font-size:19px; font-family:var(--font-heading); color:var(--choco); }
-  h1 { font-size:17px; margin:6px 0 12px; color:var(--purple-dark); font-family:var(--font-heading); font-weight:400; }
-  .script-box { background:#FFF8EF; border:2px dashed #F3D9E8; border-radius:16px; padding:16px;
-                margin-bottom:16px; font-size:17px; line-height:1.8; color:var(--choco); white-space:pre-wrap;
-                font-family: var(--font-script); font-weight:500; }
-  .hint { font-size:12px; color:var(--choco-light); margin-top:10px; text-align:center; }
-  button { font-family: var(--font-heading); border:none; border-radius:999px; padding:14px; font-size:17px;
-           font-weight:400; cursor:pointer; width:100%; transition: transform .08s ease, box-shadow .08s ease, opacity .15s ease; }
-  .btn-record { background:var(--mint); color:#fff; box-shadow:0 4px 0 var(--mint-dark); }
-  .btn-record:active { transform:translateY(4px); box-shadow:0 0 0 var(--mint-dark); }
-  .btn-stop { background:var(--coral); color:#fff; box-shadow:0 4px 0 var(--coral-dark); }
-  .btn-stop:active { transform:translateY(4px); box-shadow:0 0 0 var(--coral-dark); }
-  .btn-submit { background:var(--pink); color:#fff; margin-top:8px; box-shadow:0 4px 0 var(--pink-dark); }
-  .btn-submit:active { transform:translateY(4px); box-shadow:0 0 0 var(--pink-dark); }
-  .btn-redo2 { background:#fff; color:var(--purple-dark); border:2px solid #E3D6FF; margin-top:8px; }
-  .btn-close { background:#fff; color:var(--choco); border:2px solid #F3D9E8; margin-top:10px; }
+  .student-name-big { font-size:18px; font-family:var(--font); font-weight:700; color:var(--ink); }
+  h1 { font-size:16px; margin:6px 0 12px; color:var(--ink); font-family:var(--font); font-weight:700; }
+  .script-box { background:#F7F8FA; border:1px solid var(--line); border-radius:12px; padding:16px;
+                margin-bottom:16px; font-size:17px; line-height:1.8; color:var(--ink); white-space:pre-wrap;
+                font-family: var(--font); font-weight:500; }
+  .hint { font-size:12px; color:var(--ink-light); margin-top:10px; text-align:center; }
+  button { font-family: var(--font); border:none; border-radius:12px; padding:14px; font-size:16px;
+           font-weight:700; cursor:pointer; width:100%; transition: transform .06s ease, box-shadow .06s ease, opacity .15s ease; }
+  .btn-record { background:var(--teal); color:#fff; box-shadow:0 2px 6px rgba(20,184,166,0.35); }
+  .btn-record:active { transform:translateY(1px); box-shadow:0 1px 3px rgba(20,184,166,0.35); }
+  .btn-stop { background:var(--red); color:#fff; box-shadow:0 2px 6px rgba(239,68,68,0.35); }
+  .btn-stop:active { transform:translateY(1px); box-shadow:0 1px 3px rgba(239,68,68,0.35); }
+  .btn-submit { background:var(--primary); color:#fff; margin-top:8px; box-shadow:0 2px 6px rgba(76,111,255,0.35); }
+  .btn-submit:active { transform:translateY(1px); box-shadow:0 1px 3px rgba(76,111,255,0.35); }
+  .btn-redo2 { background:#fff; color:var(--ink); border:1px solid var(--line); margin-top:8px; }
+  .btn-close { background:#fff; color:var(--ink); border:1px solid var(--line); margin-top:10px; }
   .status { text-align:center; font-size:15px; margin-top:14px; min-height:24px; }
-  .timer { font-variant-numeric: tabular-nums; color:var(--choco-light); font-size:14px; text-align:center; margin-top:6px; }
-  .banner { padding:10px 12px; border-radius:14px; font-size:13px; margin-bottom:14px; }
-  .banner.error { background:#FFE9E9; color:var(--coral-dark); }
-  .banner.info { background:#E9F7FF; color:var(--sky-dark); margin-top:12px; text-align:center; font-weight:700; }
-  .result { text-align:center; margin-top:18px; font-size:18px; font-family:var(--font-heading); }
-  .score-line { font-size:24px; color:var(--pink-dark); margin:6px 0 2px; font-family:var(--font-heading); }
+  .timer { font-variant-numeric: tabular-nums; color:var(--ink-light); font-size:14px; text-align:center; margin-top:6px; }
+  .banner { padding:10px 12px; border-radius:10px; font-size:13px; margin-bottom:14px; color:var(--ink); }
+  .banner.error { background:#FDECEC; border-left:4px solid var(--red); }
+  .banner.info { background:#EEF2FF; border-left:4px solid var(--primary); margin-top:12px; text-align:center; font-weight:700; }
+  .result { text-align:center; margin-top:18px; font-size:18px; font-family:var(--font); font-weight:700; color:var(--ink); }
+  .score-line { font-size:22px; color:var(--ink); margin:6px 0 2px; font-family:var(--font); font-weight:800; }
   .star-row { margin:6px 0 2px; }
   .star { font-size:20px; opacity:0.25; filter:grayscale(1); margin:0 1px; }
   .star.filled { opacity:1; filter:none; }
@@ -131,7 +126,7 @@ function starsHtml(n) {
 
 // ---- 축하 컨페티(색종이) 효과 ----
 function launchConfetti() {
-  const colors = ['#FF7EB3', '#B39DFF', '#4ADE9C', '#7DD3FC', '#FFB86B'];
+  const colors = ['#4C6FFF', '#14B8A6', '#F59E0B', '#8B93A7', '#3853D6'];
   const container = document.createElement('div');
   container.style.cssText = 'position:fixed; inset:0; pointer-events:none; z-index:2000; overflow:hidden;';
   document.body.appendChild(container);

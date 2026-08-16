@@ -7,20 +7,18 @@
 <title>영어 읽기 숙제</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&family=Baloo+2:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@400;500;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --pink:#FF7EB3; --pink-dark:#E8558F;
-    --purple:#B39DFF; --purple-dark:#9270E8;
-    --mint:#4ADE9C; --mint-dark:#22B573;
-    --sky:#7DD3FC; --sky-dark:#2AA8E0;
-    --peach:#FFB86B; --peach-dark:#F0933A;
-    --coral:#FF6B6B; --coral-dark:#E24545;
-    --choco:#8B7160; --choco-light:#C4B3A6;
-    --cream:#FFFDF7;
-    --font-heading: 'Jua', 'Malgun Gothic', sans-serif;
-    --font-body: 'Gowun Dodum', 'Malgun Gothic', sans-serif;
-    --font-script: 'Baloo 2', 'Gowun Dodum', 'Malgun Gothic', sans-serif; /* 영어 읽기 대본 전용: 또렷한 글자 구분이 중요 */
+    --primary:#4C6FFF; --primary-dark:#3853D6;
+    --teal:#14B8A6; --teal-dark:#0E9488;
+    --amber:#F59E0B; --amber-dark:#C9790A;
+    --red:#EF4444; --red-dark:#DC2626;
+    --ink:#2E3440; --ink-light:#6B7280;
+    --line:#E3E6ED;
+    --surface:#FFFFFF;
+    --bg:#F4F6FA;
+    --font: 'Gothic A1', 'Malgun Gothic', sans-serif;
   }
   * { box-sizing: border-box; }
   html, body {
@@ -29,105 +27,101 @@
     overflow-x: hidden;
     -webkit-text-size-adjust: 100%; /* 크롬 폰트 자동 확대/축소 방지 */
   }
-  body { font-family: var(--font-body); background:linear-gradient(180deg, #FDF4FF 0%, #F0FBFF 100%);
-         background-attachment:fixed; margin:0; padding:20px; font-size:16px; color:var(--choco); }
+  body { font-family: var(--font); background:var(--bg); margin:0; padding:20px; font-size:16px; color:var(--ink); }
 
   @keyframes popIn {
-    0% { opacity:0; transform: translateY(16px) scale(0.94); }
-    60% { opacity:1; transform: translateY(-4px) scale(1.02); }
-    100% { opacity:1; transform: translateY(0) scale(1); }
+    0% { opacity:0; transform: translateY(10px); }
+    100% { opacity:1; transform: translateY(0); }
   }
   @keyframes confettiFall {
-    0% { transform: translateY(0) rotate(0deg); opacity:0.95; }
+    0% { transform: translateY(0) rotate(0deg); opacity:0.9; }
     100% { transform: translateY(110vh) rotate(360deg); opacity:0; }
   }
 
-  .card { position:relative; max-width:520px; margin:0 auto; background:var(--cream); border-radius:24px; padding:26px 24px;
-          box-sizing: border-box; border:3px solid #FFE1EE;
-          box-shadow:0 10px 24px rgba(255,126,179,0.18), 0 2px 6px rgba(139,113,96,0.08); }
-  .card.pop-in { animation: popIn 0.45s cubic-bezier(.34,1.56,.64,1); }
-  #loginCard::before { content:'⭐'; position:absolute; top:-16px; left:24px; font-size:30px; transform:rotate(-12deg); }
-  #homeworkCard::before { content:'🎈'; position:absolute; top:-18px; right:24px; font-size:32px; transform:rotate(10deg); }
+  .card { position:relative; max-width:520px; margin:0 auto; background:var(--surface); border-radius:16px; padding:24px;
+          box-sizing: border-box; border:1px solid var(--line);
+          box-shadow:0 4px 14px rgba(20,24,40,0.06); }
+  .card.pop-in { animation: popIn 0.3s ease-out; }
 
-  h1 { font-family: var(--font-heading); font-weight:400; font-size:22px; margin:0 0 14px; color:var(--purple-dark); }
-  input[type=text] { width:100%; padding:13px 16px; font-size:16px; font-family:var(--font-body); border-radius:14px;
-                      border:2px solid #F3D9E8; background:#fff; }
-  input[type=text]:focus { outline:none; border-color:var(--pink); box-shadow:0 0 0 4px rgba(255,126,179,0.18); }
+  h1 { font-family: var(--font); font-weight:700; font-size:20px; margin:0 0 14px; color:var(--ink); }
+  input[type=text] { width:100%; padding:12px 14px; font-size:16px; font-family:var(--font); border-radius:10px;
+                      border:1px solid var(--line); background:#fff; color:var(--ink); }
+  input[type=text]:focus { outline:none; border-color:var(--primary); box-shadow:0 0 0 3px rgba(76,111,255,0.15); }
   .row-flex { display:flex; gap:8px; margin-top:10px; }
   .row-flex input { flex:1; }
 
-  button { font-family: var(--font-heading); transition: transform .08s ease, box-shadow .08s ease, opacity .15s ease; }
-  button.primary { background:var(--pink); color:#fff; border:none; border-radius:999px; padding:14px 18px;
-                    font-size:17px; font-weight:400; cursor:pointer; white-space:nowrap; min-height:48px;
-                    box-shadow:0 4px 0 var(--pink-dark); }
-  button.primary:active:not(:disabled) { transform:translateY(4px); box-shadow:0 0 0 var(--pink-dark); }
-  button.primary:disabled { background:#E5DAD2; color:#fff; box-shadow:none; cursor:not-allowed; }
+  button { font-family: var(--font); font-weight:700; transition: transform .06s ease, box-shadow .06s ease, opacity .15s ease; }
+  button.primary { background:var(--primary); color:#fff; border:none; border-radius:12px; padding:14px 18px;
+                    font-size:16px; cursor:pointer; white-space:nowrap; min-height:48px;
+                    box-shadow:0 2px 6px rgba(76,111,255,0.35); }
+  button.primary:active:not(:disabled) { transform:translateY(1px); box-shadow:0 1px 3px rgba(76,111,255,0.35); }
+  button.primary:disabled { background:#C7CCD6; color:#fff; box-shadow:none; cursor:not-allowed; }
   .radio-list { margin-top:12px; }
-  .radio-item { display:flex; align-items:center; gap:8px; padding:13px; border:2px solid #F3D9E8;
-                border-radius:14px; margin-top:8px; cursor:pointer; font-size:15px; background:#fff; }
+  .radio-item { display:flex; align-items:center; gap:8px; padding:12px; border:1px solid var(--line);
+                border-radius:10px; margin-top:6px; cursor:pointer; font-size:15px; background:#fff; }
   .radio-item input { width:auto; }
-  .msg { margin-top:14px; padding:12px 14px; border-radius:14px; font-size:14px; }
-  .msg.error { background:#FFE9E9; color:var(--coral-dark); }
-  .msg.info { background:#E9F7FF; color:var(--sky-dark); }
+  .msg { margin-top:14px; padding:12px 14px; border-radius:10px; font-size:14px; color:var(--ink); }
+  .msg.error { background:#FDECEC; border-left:4px solid var(--red); }
+  .msg.info { background:#EEF2FF; border-left:4px solid var(--primary); }
 
   .header-info { display:flex; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap; }
-  .class-badge { background:var(--purple); color:#fff; font-size:13px; font-weight:700; font-family:var(--font-heading);
-                  padding:6px 14px; border-radius:999px; white-space:nowrap; }
-  .student-name-big { font-family: var(--font-heading); font-size:23px; color:var(--choco); }
-  .history-link { text-align:right; font-size:13px; color:var(--sky-dark); cursor:pointer;
-                   margin-bottom:6px; font-weight:700; }
+  .class-badge { background:var(--primary); color:#fff; font-size:13px; font-weight:700;
+                  padding:5px 12px; border-radius:999px; white-space:nowrap; }
+  .student-name-big { font-family: var(--font); font-weight:700; font-size:20px; color:var(--ink); }
+  .history-link { text-align:right; font-size:13px; color:var(--ink-light); cursor:pointer;
+                   margin-bottom:6px; font-weight:700; text-decoration:underline; text-underline-offset:2px; }
 
-  .retry-banner { background:#FFF1DE; color:var(--peach-dark); border:2px solid #FFDBA8; border-radius:14px;
+  .retry-banner { background:#FFF7E8; color:var(--ink); border-left:4px solid var(--amber); border-radius:10px;
                    padding:10px 14px; font-weight:700; font-size:14px; margin:18px 0 10px; }
 
-  .script-box { background:#FFF8EF; border:2px dashed #F3D9E8; border-radius:16px; padding:16px;
-                margin-top:10px; font-size:18px; line-height:1.9; color:var(--choco); white-space:pre-wrap;
-                font-family: var(--font-script); font-weight:500; }
-  .hint { font-size:12px; color:var(--choco-light); margin-top:14px; text-align:center; }
+  .script-box { background:#F7F8FA; border:1px solid var(--line); border-radius:12px; padding:16px;
+                margin-top:10px; font-size:18px; line-height:1.85; color:var(--ink); white-space:pre-wrap;
+                font-family: var(--font); font-weight:500; }
+  .hint { font-size:12px; color:var(--ink-light); margin-top:14px; text-align:center; }
 
-  .info-box { background:#E9F7FF; border-radius:16px; padding:12px 14px; margin:14px 0; }
-  .info-line { display:flex; align-items:flex-start; gap:8px; font-size:13px; color:var(--sky-dark); line-height:1.6; }
+  .info-box { background:#EEF2FF; border-radius:12px; padding:12px 14px; margin:14px 0; }
+  .info-line { display:flex; align-items:flex-start; gap:8px; font-size:13px; color:var(--ink); line-height:1.6; }
   .info-line + .info-line { margin-top:8px; }
   .info-icon { flex-shrink:0; font-size:15px; }
 
-  .attempt { position:relative; padding:14px; border:2px solid #F3D9E8; border-radius:16px; margin-top:12px; background:#fff; }
-  .attempt.locked { background:#F7F3EE; border-color:#EBE2D8; opacity:0.65; }
+  .attempt { position:relative; padding:14px; border:1px solid var(--line); border-radius:12px; margin-top:10px; background:#fff; }
+  .attempt.locked { background:#F5F6F8; opacity:0.6; }
   .attempt-top { display:flex; align-items:center; justify-content:space-between; gap:10px; }
   .attempt-actions { display:flex; align-items:center; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
-  .attempt-label { font-family:var(--font-heading); font-size:16px; color:var(--purple-dark); }
-  .status-txt { font-size:13px; color:var(--choco); margin-top:6px; line-height:1.5; }
+  .attempt-label { font-family:var(--font); font-weight:700; font-size:15px; color:var(--ink); }
+  .status-txt { font-size:13px; color:var(--ink-light); margin-top:6px; line-height:1.5; }
   .star-row { margin-top:4px; }
   .star { font-size:15px; opacity:0.25; filter:grayscale(1); margin-right:1px; }
   .star.filled { opacity:1; filter:none; }
-  button.btn-go { background:var(--mint); color:#fff; border:none; border-radius:999px;
-                   padding:10px 16px; font-size:13px; font-weight:400; cursor:pointer; min-height:40px;
-                   box-shadow:0 3px 0 var(--mint-dark); }
-  button.btn-go:active { transform:translateY(3px); box-shadow:0 0 0 var(--mint-dark); }
-  button.btn-locked { background:#EBE2D8; color:#B5A395; border:none; border-radius:999px;
-                       padding:10px 16px; font-size:13px; font-weight:400; cursor:not-allowed; }
-  button.btn-redo { background:#fff; color:var(--purple-dark); border:2px solid #E3D6FF; border-radius:999px;
-                     padding:7px 14px; font-size:12px; cursor:pointer; }
-  button.btn-play { background:#E9F7FF; color:var(--sky-dark); border:2px solid #C7ECFF; border-radius:999px;
-                     padding:7px 14px; font-size:12px; font-weight:700; cursor:pointer; }
+  button.btn-go { background:var(--teal); color:#fff; border:none; border-radius:10px;
+                   padding:10px 16px; font-size:13px; cursor:pointer; min-height:40px;
+                   box-shadow:0 2px 6px rgba(20,184,166,0.35); }
+  button.btn-go:active { transform:translateY(1px); box-shadow:0 1px 3px rgba(20,184,166,0.35); }
+  button.btn-locked { background:#E3E6ED; color:#9AA1AE; border:none; border-radius:10px;
+                       padding:10px 16px; font-size:13px; cursor:not-allowed; }
+  button.btn-redo { background:#fff; color:var(--ink); border:1px solid var(--line); border-radius:10px;
+                     padding:7px 12px; font-size:12px; cursor:pointer; }
+  button.btn-play { background:#EEF2FF; color:var(--ink); border:1px solid #D7DEFF; border-radius:10px;
+                     padding:7px 12px; font-size:12px; font-weight:700; cursor:pointer; }
   .audio-holder { margin-top:8px; }
   .audio-holder audio { width:100%; display:block; }
-  .waiting-banner { margin-top:16px; padding:12px 14px; border-radius:14px; font-size:14px;
-                     text-align:center; background:#E9F7FF; color:var(--sky-dark); }
-  .done-banner { margin-top:16px; padding:18px 14px; border-radius:18px; font-size:17px; font-family:var(--font-heading);
-                  text-align:center; background:#E7FBF1; color:var(--mint-dark); border:2px solid #BEF2D8; }
+  .waiting-banner { margin-top:16px; padding:12px 14px; border-radius:10px; font-size:14px;
+                     text-align:center; background:#EEF2FF; color:var(--ink); border-left:4px solid var(--primary); }
+  .done-banner { margin-top:16px; padding:16px 14px; border-radius:12px; font-size:16px; font-weight:700;
+                  text-align:center; background:#EAFBF6; color:var(--ink); border-left:4px solid var(--teal); }
 
-  .history-item { border:2px solid #F3D9E8; border-radius:16px; padding:12px 14px; margin-top:10px; background:#fff; }
-  .history-item h3 { font-family:var(--font-heading); margin:0 0 6px; font-size:15px; color:var(--purple-dark); font-weight:400; }
-  .history-attempt { font-size:13px; color:var(--choco); padding:5px 0; border-top:1px dashed #F3D9E8; }
+  .history-item { border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin-top:10px; background:#fff; }
+  .history-item h3 { font-family:var(--font); margin:0 0 6px; font-size:15px; color:var(--ink); font-weight:700; }
+  .history-attempt { font-size:13px; color:var(--ink-light); padding:4px 0; border-top:1px dashed var(--line); }
   .history-attempt:first-child { border-top:none; }
-  button.btn-gray-full { background:#fff; color:var(--choco); border:2px solid #F3D9E8; border-radius:999px;
+  button.btn-gray-full { background:#fff; color:var(--ink); border:1px solid var(--line); border-radius:10px;
                           padding:12px 16px; font-size:14px; width:100%; margin-top:16px; cursor:pointer; }
 
-  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(139,113,96,0.35); z-index:1000;
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(30,32,40,0.4); z-index:1000;
                     align-items:center; justify-content:center; padding:20px; }
   .modal-overlay.open { display:flex; }
   .modal-overlay .card { width:100%; }
-  .modal-overlay.open .card { animation: popIn 0.4s cubic-bezier(.34,1.56,.64,1); }
+  .modal-overlay.open .card { animation: popIn 0.25s ease-out; }
 </style>
 </head>
 <body>
@@ -247,7 +241,7 @@ function starsHtml(n) {
 
 // ---- 축하 컨페티(색종이) 효과 ----
 function launchConfetti() {
-  const colors = ['#FF7EB3', '#B39DFF', '#4ADE9C', '#7DD3FC', '#FFB86B'];
+  const colors = ['#4C6FFF', '#14B8A6', '#F59E0B', '#8B93A7', '#3853D6'];
   const container = document.createElement('div');
   container.style.cssText = 'position:fixed; inset:0; pointer-events:none; z-index:2000; overflow:hidden;';
   document.body.appendChild(container);
@@ -498,7 +492,7 @@ function applyHomeworkData(res) {
     const allAttempts = res.attempts.concat(res.retryAssignment ? res.retryAssignment.attempts : []);
     const hasPractice = allAttempts.some(a => a.grade === 'Practice');
     const bannerHtml = hasPractice
-      ? '<div class="done-banner" style="margin-top:20px; background:#FFF1DE; color:var(--peach-dark); border-color:#FFDBA8;">💪 연습해서 다시 한번 녹음해봐요!</div>'
+      ? '<div class="done-banner" style="margin-top:20px; background:#FFF7E8; border-left-color:var(--amber);">💪 연습해서 다시 한번 녹음해봐요!</div>'
       : '<div class="done-banner" style="margin-top:20px;">🎉 오늘 숙제를 모두 마쳤어요! 수고했어요.</div>';
     allDoneArea.innerHTML = bannerHtml +
       '<button class="primary" id="goToLoginBtn" style="width:100%; margin-top:12px;">🏠 처음 화면으로 이동</button>';
@@ -721,7 +715,7 @@ pwModalConfirmBtn.addEventListener('click', () => {
         pwModalFields.style.display = 'none';
         pwModalConfirmBtn.style.display = 'none';
         pwModalCancelBtn.textContent = '닫기';
-        pwModalMsg.innerHTML = '<div class="msg info" style="color:var(--mint-dark); background:#E7FBF1;">✅ 암호가 변경됐어요!</div>';
+        pwModalMsg.innerHTML = '<div class="msg info" style="background:#EAFBF6; border-left-color:var(--teal);">✅ 암호가 변경됐어요!</div>';
       } else {
         pwModalMsg.innerHTML = '<div class="msg error">' + (res.message || '암호 변경에 실패했어요.') + '</div>';
       }
