@@ -64,11 +64,14 @@
   .result { text-align:center; margin-top:18px; font-size:18px; font-family:var(--font); font-weight:700; color:var(--ink); }
   .score-line { font-size:22px; color:var(--ink); margin:6px 0 2px; font-family:var(--font); font-weight:800; }
   audio { width:100%; margin-top:14px; }
+  .back-link { display:inline-block; font-size:13px; color:var(--ink-light); cursor:pointer; font-weight:700;
+                text-decoration:underline; text-underline-offset:2px; margin-bottom:12px; }
 </style>
 </head>
 <body>
 <div style="position:fixed; bottom:4px; right:6px; font-size:10px; color:#d1d5db; z-index:9999; pointer-events:none; user-select:none;">crome</div>
 <div class="card">
+  <span class="back-link" id="backBtn">← 이전 화면으로</span>
   <div class="header-info">
     <span class="class-badge" id="classBadge"></span>
     <span class="student-name-big" id="studentNameBig"></span>
@@ -158,6 +161,18 @@ const reviewArea = document.getElementById('reviewArea');
 const resultArea = document.getElementById('resultArea');
 
 recordBtn.addEventListener('click', startRecording);
+
+// ---- 녹음 없이 이전 화면(숙제 화면)으로 돌아가기 ----
+// 이 페이지는 숙제 화면에서 window.open()으로 열린 새 창/탭이라, 그냥 닫으면 원래 숙제
+// 화면으로 자연스럽게 돌아간다. 녹음 중일 때는 beforeunload 경고가 그대로 뜨므로
+// (아래 window.addEventListener('beforeunload', ...)) 녹음 중 실수로 나가는 것도 막아준다.
+document.getElementById('backBtn').addEventListener('click', () => {
+  if (window.opener) {
+    window.close();
+  } else {
+    history.back();
+  }
+});
 
 function startRecording() {
   audioChunks = [];
