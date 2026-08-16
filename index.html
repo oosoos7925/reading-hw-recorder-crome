@@ -643,18 +643,29 @@ function toggleAudio(btn, driveFileId) {
 }
 
 // 녹음 창(새 탭)에서 다시 이 화면으로 돌아오면(탭 전환/창 닫기 등) 자동으로 최신 상태를 다시 불러옵니다.
-// postMessage를 놓치거나, 학생이 녹음을 끝내지 않고 그냥 돌아온 경우에도 버튼이 계속 눌린 채로 남지 않도록 하기 위함입니다.
-window.addEventListener('focus', () => {
+// postMessage를 놓치거나, 학생이 녹음을 끝내지 않고 그냥 돌아온 경우(예: 브라우저/폰의
+// 뒤로가기로 녹음 창을 나온 경우)에도 버튼이 계속 눌린 채로 남지 않도록 focus뿐 아니라
+// visibilitychange도 같이 감시한다 — 일부 모바일 브라우저는 background 탭에서 focus를
+// 늦게 보내거나 아예 보내지 않는데, visibilitychange는 더 안정적으로 온다.
+function maybeReloadHomeworkOnReturn() {
   if (currentStudentId && document.getElementById('homeworkCard').style.display !== 'none') {
     reloadHomework();
   }
+}
+window.addEventListener('focus', maybeReloadHomeworkOnReturn);
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') maybeReloadHomeworkOnReturn();
 });
 
+let reloadHomeworkInFlight = false; // message/focus/visibilitychange가 거의 동시에 겹쳐 불려도 중복 호출 방지
 function reloadHomework() {
+  if (reloadHomeworkInFlight) return;
+  reloadHomeworkInFlight = true;
   callApi('getHomeworkScreen', { studentId: currentStudentId }).then(res => {
+    reloadHomeworkInFlight = false;
     if (res.error || res.noAssignment) return;
     applyHomeworkData(res);
-  });
+  }).catch(() => { reloadHomeworkInFlight = false; });
 }
 
 // ---- 지난 숙제 기록 ----

@@ -146,12 +146,23 @@ let mediaRecorder, audioChunks = [];
 let recordingTimer = null, autoStopTimer = null, recordSeconds = 0;
 let isRecordingNow = false;
 let recordedBlob = null;
+let hasNotifiedOpener = false; // 완료/취소 신호를 이미 보냈는지 (중복 전송 방지용)
 
 window.addEventListener('beforeunload', (e) => {
   if (isRecordingNow) {
     e.preventDefault();
     e.returnValue = '';
   }
+});
+
+// ---- 안전망: "이전 화면으로" 링크를 안 누르고 폰/브라우저 자체 뒤로가기나 스와이프로
+// 이 창을 나가는 경우에도, 숙제 화면의 "다시 녹음하러 가기" 버튼이 계속 눌린 채로
+// 남지 않도록 페이지가 실제로 사라지기 직전(pagehide)에 한 번 더 신호를 보낸다.
+window.addEventListener('pagehide', () => {
+  if (hasNotifiedOpener) return; // 이미 완료/취소 신호를 보냈으면 중복 전송 안 함
+  try {
+    if (window.opener) window.opener.postMessage({ type: 'readingHwRecordingCancelled' }, '*');
+  } catch (e) {}
 });
 
 const recordBtn = document.getElementById('recordBtn');
@@ -175,6 +186,7 @@ backBtn.addEventListener('click', () => {
   try {
     if (window.opener) window.opener.postMessage({ type: 'readingHwRecordingCancelled' }, '*');
   } catch (e) {}
+  hasNotifiedOpener = true;
   if (window.opener) {
     window.close();
   } else {
@@ -326,6 +338,7 @@ function notifyOpenerAndMaybeClose() {
       window.opener.postMessage({ type: 'readingHwRecordingComplete' }, '*');
     }
   } catch (e) {}
+  hasNotifiedOpener = true;
 
   const closeBtn = document.getElementById('closeBtn');
   if (closeBtn) {
